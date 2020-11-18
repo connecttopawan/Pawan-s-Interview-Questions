@@ -1,0 +1,46 @@
+1. What is name node?
+	Name Node in Hadoop is the master node, which holds metadata of all files in cluster. Manages the data node and take care of replication factor.
+
+2. Data Node
+	Data Nodes are the slave nodes in HDFS which stores actual data. 
+	
+3. Secondary Name Node/ check point node
+	It is helper deamon for name node. It constantly read all meta data from name node. It downloads the EditLogs from the NameNode at regular intervals and applies to FsImage. The new FsImage is copied back to the NameNode.
+	
+4. Job Tracker/ Resource Manager
+	Job Tracker is the master daemon for both Job resource management and scheduling/monitoring of jobs
+	JobTracker receives the requests for MapReduce execution from the client, talks to the NameNode to determine the location of the data and finds the best TaskTracker nodes to execute tasks.
+
+5. TaskTracker/Node Manager
+	It runs on DataNode and executes Mapper and Reducer tasks.
+	
+6. basic parameters of a Mapper:  LongWritable and Text Text and IntWritable
+
+7. common input formats defined in Hadoop:	TextInputFormat KeyValueInputFormat SequenceFileInputFormat
+
+8. sequence file in Hadoop:
+	To store binary key/value pairs, sequence file is used. Unlike regular compressed file, sequence file support splitting even when the data inside the file is compressed.
+
+9. Hadoop’s three configuration files: core-site.xml mapred-site.xml hdfs-site.xml
+
+10. Parquet vs ORC
+			i. Parquet compress 62% where ORC compress 78%
+			ii. Parquet default compression is SNAPPY
+			iii. ORC+Zlib has better performance than Paqruet + Snappy
+			iv. Hive has a vectorized ORC reader but no vectorized parquet reader.
+			v. Spark has a vectorized parquet reader and no vectorized ORC reader.
+			vi. Spark performs best with parquet, hive performs best with ORC.
+			
+11. Compression Techniques:
+		i. GZIP: Compressed data is not splittable and hence not suitable for MapReduce jobs
+				 Good choice for Cold data which is infrequently accessed
+		ii. BZIP2: Compressed data is splittable.
+					Even though the compressed data is splittable, it is generally not suited for MR jobs because of high compression/decompression time.
+		iii. LZO: Compressed data is splittable if an appropriate indexing algorithm is used.
+					Due to compressed data is splittable and low ompression/decompression time, it is best suited for MR jobs
+		iv. Snappy: Compressed data is not splittable if used with normal file like .txt, but splittable with Container file formats like Avro and SequenceFile.
+		
+12. Kafka version used: 2.11  /0.8.2
+
+13. cluster node 30
+	cluster size 60 TB

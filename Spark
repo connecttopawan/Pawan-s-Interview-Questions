@@ -1,0 +1,114 @@
+1. Accumulator: Spark Accumulators are shared variables which are only “added” through an associative and commutative operation.
+	val accum = sc.longAccumulator("SumAccumulator")
+
+2.Broadcast Variable:
+	Broadcast variables are read-only variables that will be cached in all the executors instead of shipping every time with the tasks. broadcast variables are used as lookups without any shuffle, as each executor will keep a local copy of it, so no network I/O overhead is involved here.
+	val broadcastVar = sc.broadcast(Array(0, 1, 2, 3))
+
+3. Spark Persistence Storage Levels
+	MEMORY_ONLY
+	MEMORY_AND_DISK
+	MEMORY_ONLY_SER
+	MEMORY_AND_DISK_SER
+	DISK_ONLY
+	
+4. Writing a file 
+	df2.write.mode(SaveMode.Overwrite).csv("/tmp/spark_output/zipcodes")
+	
+5. spark-submit \
+  --master <master-url> \
+  --deploy-mode <deploy-mode> \
+  --conf <key<=<value> \
+  --driver-memory <value>g \
+  --executor-memory <value>g \
+  --executor-cores <number of cores>  \
+  --jars  <comma separated dependencies>
+  --class <main-class> \
+  <application-jar> \
+  
+6. Kafka vs RabbitMQ:
+		i. Kafka is having pub sub architechture where RabbitMQ is Messaging queue (JMS based)
+		ii. As soon as consumer picked up a message then the message got deleted in rabbitMQ, but in kafka it will there in topic of some time. By default it is 7 days.
+		iii. Kafka delivers the message in the order it receives but in rabbitMQ delivery is guaranteed but order of message is not.
+		iv. Kafka is a distributed system and having more throughput, more scalability. RabbitMQ is not much scalable.
+		
+7. Creating spark session
+	val spark = SparkSession
+  .builder
+  .appName("StructuredNetworkWordCount")
+  .getOrCreate()
+
+8. Reading from kafka 
+	val df = spark
+  .readStream
+  .format("kafka")
+  .option("kafka.bootstrap.servers", "host1:port1,host2:port2")
+  .option("subscribe", "topic1")
+  .option("includeHeaders", "true")
+  .load()
+  
+9. Windowing
+	val windowedCounts = words.groupBy(
+	window($"timestamp", "10 minutes", "5 minutes"),
+	$"word"
+	).count()
+
+10. Handling late data/ Watermark
+	val windowedCounts = words
+    .withWatermark("timestamp", "10 minutes")
+    .groupBy(
+        window($"timestamp", "10 minutes", "5 minutes"),
+        $"word")
+    .count()
+	
+11. Spark join without shuffle: HashPartitioner()
+
+12. Solution for data skewness in spark: 
+		i. Repartition in to bigger partition
+		ii. Salting Technique (Adding salt ie random number to partition key)
+		iii. Isolating Salting
+		iv. Isolating Map join
+		v. Iterative broadcast join 
+		
+13. User schema in spark:
+	val simpleSchema = StructType(Array(
+		StructField("firstname",StringType,true),
+		StructField("middlename",StringType,true),
+		StructField("lastname",StringType,true),
+		StructField("id", StringType, true),
+		StructField("gender", StringType, true),
+		StructField("salary", IntegerType, true)
+	))		
+	
+	val df = spark.createDataFrame(rdd,simpleSchema)
+	df.printSchema()
+	
+14. What is Executor memory and Storage memory?
+	Executors divides it memory in to executor memory and storage memory.
+	Executor memory is used for computation in shuffles, joins, sorts and aggregations.
+	Storage memory is used for caching and dealing internal data across the cluster.
+	When no execution memory is used, storage can acquire all the available memory and vice versa.
+	
+15. Difference between Tez and MR?
+	Tez is a DAG (Directed acyclic graph) architecture. MapReduce tasks combine into a single job that is treated as a node in the DAG, enforcing concurrency and serialization. Tez works very similar to Spark (Tez was created by Hortonworks well before Spark). It Executes the plan but not reads data from disk, perform in memory computation.
+	MR reads data from disk, run mapper and stores the data on second disk. Performs sorting and shuffling and store data on third mapper. Then run reducers and storage the data on fourth mapper.
+	
+16. What is out of memory issue in spark?
+	Spark can be go out of memory due to of two reasons: Driver out of memory and Executor out of memory.
+		a. Driver out of memory: 
+			i. collect operation: The most common reason of driver to go out of memory is collect operation. When collect operation is being performed then 	files from all the executors comes to the driver which breach the memory capacity of driver.
+			ii. Broadcast join: Suppose we are having few big files and few small files in executors. When we performs bradcast join these small files is being collected at driver and breach it memory capacity. To avoid this we can increase the driver memory or we can set threshold limit for broadcast table.
+		b. Executor out of memory:
+			i. YARN memory overhead: YARN memory is off heap memory part of executors. Whatever the strings we create as part of our program spark creates hash table of that which is called intern strings. These intern string are stored here. Spark internal objects are stored here. Apart from this, if we code in any other languages apart from Scala wheather it is python or R then their objects are also get stored in YARN memory. YARN memory is 10% of executor memory. To avoid the YARN memory overhead we have to increase the capacity of YARN memory overhead part.
+			ii. High Concurrency: Let say we have multiple executors in a machine and we have assigned cores to executor without thinking of the capacity of our machine. Let say we have assigned 10 cores to each executors then it will pick up 10 partitions and process them. Each partition will have their own metadata and overhead memory requirement. Total available executor-memory will be divided to these 10 cores.So each executors have to store huge metadata. Best practice is to assign 4-5 cores to each executors.
+			iii. Big Partitions:
+		
+17. How to choose number of executors and memory?
+	Let we are having 6 machines with 16 cores and 64 GB RAM each ie. total 96 cores and 384 GB RAM.
+	Smallest executor will be 16/16 core and 64/16 GB of RAM. 96/6 executors on each machine.
+
+18. Repartition vs Coalesce?
+
+19. What kind of problems we will face when there are a lot of small files in hadoop?
+	i. If we have lots of small files in cluster that will increase burden on namenode. bcoz namenode stores the meta data of file so if we have lots of small files name node keep noting address of files and hence if master down cluster also gone down.
+	ii. Spark will also need to create more executor tasks... This will create unnecessary overhead and slow down your data processing.

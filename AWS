@@ -1,0 +1,27 @@
+1. Maximum Size of S3 bucket is unlimited but a single amazon S3 object can be a size of up to 5 TB.
+
+2. Launch AWS CLI:
+		i. Open cmd prmpt
+		ii. Type "aws configue"
+		iii. provide access key id & secret access key 
+		iv. Provide default region name & default output format as blank
+
+3. S3 operations from CLI:
+		i. To list: aws s3 ls
+		ii. Create bucket: aws s3 mb s3://<unique_bucket_name>
+		iii. Remove bucket: aws s3 rb s3://<bucket_name>
+		iv. To sync local folder with S3 bucket/ upload to S3 
+				cd folder_location
+				aws s3 sync . s3://<bucket_name>
+		v. Download from S3
+				cd folder_location
+				aws s3 sync s3://<bucket_name> .
+		vi. Empty a bucket
+				aws s3 rm s3://<bucket_name> --recursive
+
+4. EC2 instance will be in Compute
+
+5. AWS Lambda 
+		i. Create IAM role 
+		ii. Add permission to the role by the use of attach-policy-to-role
+		iii. Create function.
