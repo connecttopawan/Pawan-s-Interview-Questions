@@ -1,0 +1,9 @@
+1. SMB Join in Hive
+	In Hive, while each mapper reads a bucket from the first table and the corresponding bucket from the second table, in SMB join. It is useful when tables are large. Limitation: Both tables should have same number of buckets.
+
+2. What is serde?
+	Serde in Hive is used for I/O.
+	Serialization — Process of converting an object in memory into bytes that can be stored in a file or transmitted over a network.
+	Deserialization — Process of converting the bytes back into an object in memory.
+
+3. Lateral view and Explode

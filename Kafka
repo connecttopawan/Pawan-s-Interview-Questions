@@ -1,0 +1,79 @@
+	#	#		  #			# # # # #	#	#		  #			
+	#  #		 # #		#           #  #		 # #		
+	# #			#   #		#           # #			#   #		
+	##		   # # # #  	# # #       ##		   # # # #  	
+	# #		  #       #		#           # #		  #       #		
+	#  #	 #		   #	#           #  #	 #		   #	
+	#   #	#			#	#           #   #	#			#	
+###########################################################################
+
+1. Kafka vs RabbitMQ:
+		i. Kafka is having pub sub architechture where RabbitMQ is Messaging queue (JMS based)
+		ii. As soon as consumer picked up a message then the message got deleted in rabbitMQ, but in kafka it will there in topic of some time. By default it is 7 days.
+		iii. Kafka delivers the message in the order it receives but in rabbitMQ delivery is guaranteed but order of message is not.
+		iv. Kafka is a distributed system and having more throughput, more scalability. RabbitMQ is not much scalable.
+
+2. What is Apache kafka?
+		Apache Kafka is a publish-subscribe messaging system developed by Apache written in Scala. It is a distributed, partitioned and replicated log service.
+	
+3. The maximum size of the message does Kafka server can receive?
+		The maximum size of the message that Kafka server can receive is 1000000 bytes.
+
+4. Explain what is Zookeeper in Kafka? Can we use Kafka without Zookeeper?
+		Zookeeper is an open source, high-performance co-ordination service used for distributed applications adapted by Kafka.
+		No, it is not possible to bye-pass Zookeeper and connect straight to the Kafka broker. Once the Zookeeper is down, it cannot serve client request.
+		•  Zookeeper is basically used to communicate between different nodes in a cluster
+		•  In Kafka, it is used to commit offset, so if node fails in any case it can be retrieved from the previously committed offset
+		•  Apart from this it also does other activities like leader detection, distributed synchronization, configuration management, identifies when a new node leaves or joins, the cluster, node status in real time, etc.
+
+5. How message is consumed by consumer in Kafka?
+		Transfer of messages in Kafka is done by using sendfile API. It enables the transfer of bytes from the socket to disk via kernel space saving copies and call between kernel user back to the kernel.
+		
+6. How you can get exactly once messaging from Kafka during data production?
+		During data, production to get exactly once messaging from Kafka you have to follow two things avoiding duplicates during data consumption and avoiding duplication during data production.
+		Here are the two ways to get exactly one semantics while data production:
+		•  Avail a single writer per partition, every time you get a network error checks the last message in that partition to see if your last write succeeded
+		•  In the message include a primary key (UUID or something) and de-duplicate on the consumer
+		
+7. What is ISR?
+		ISR is a set of message replicas that are completely synced up with the leaders, in other word ISR has all messages that are committed. ISR should always include all replicas until there is a real failure. A replica will be dropped out of ISR if it deviates from the leader.
+		
+8. What does it indicate if replica stays out of ISR for a long time?
+		If a replica remains out of ISR for an extended time, it indicates that the follower is unable to fetch data as fast as data accumulated at the leader.
+	
+9. Mention what happens if the preferred replica is not in the ISR?
+		If the preferred replica is not in the ISR, the controller will fail to move leadership to the preferred replica.
+		
+10. what is a partitioning key?
+		Within the available producer, the main function of partitioning key is to validate and direct the destination partition of the message. Normally, a hashing based partitioner is used to assess the partition Id if the key is provided.
+	
+11. Within the producer can you explain when will you experience QueueFullException occur?
+		Well, if the producer is sending more messages to the broker and if it cannot handle this in the flow of the messages then we will experience QueueFullException.
+		The producers don't have any limitation so it doesn't know when to stop the overflow of the messages. So to overcome this problem one should add multiple brokers so that the flow of the messages can be handled perfectly and we won't fall into this exception again.
+	
+12. What is the core API in Kafka?
+		They are four main core API’s:
+		Producer API : The producer API is responsible where it will allow the application to push a stream of records to one of the Kafka topics.
+		Consumer API : The Consumer API is responsible where it allows the application to receive one or more topics and at the same time process the stream of data that is produced.
+		Streams API : The Streams API is responsible where it allows the application to act as a processor and within the process, it will be effectively transforming the input streams to output streams.
+		Connector API : The Connector API is responsible where it allows the application to stay connected and keeping a track of all the changes that happen within the system. For this to happen, we will be using reusable producers and consumers which stays connected to the Kafka topics.
+		All the communications between the clients happen over through high-performance language via TCP protocol.
+		
+13. what is a topic?		
+		A Topic is a category/feed name to which records are stored and published. It is virtual groups of one or many partitions across Kafka brokers in a Kafka cluster. A single Kafka broker stores messages in a partition in an ordered fashion, i.e. appends them one message after another and creates a log file.
+		
+14. What is kafka log?
+		Kafka log represents a log of a partition of a topic. The default log directory is /var/log/kafka.
+		
+15. How can I add new Kafka brokers dynamically to a cluster?
+		New brokers can be added online to a cluster. Those new brokers won't have any data initially until either some new topics are created or some replicas are moved to them using the partition reassignment tool. 
+
+16. How to replace a failed broker?
+		When a broker fails, Kafka doesn't automatically re-replicate the data on the failed broker to other brokers. This is because in the common case, one brings down a broker to apply code or config changes, and will bring up the broker quickly afterward. Re-replicating the data in this case will be wasteful. In the rarer case that a broker fails completely, one will need to bring up another broker with the same broker id on a new server. The new broker will automatically replicate the missing data.
+
+17. After bouncing a broker why do I see LeaderNotAvailable or NotLeaderForPartition?
+		If you don't use controlled shutdown, some partitions that had leaders on the broker being bounced go offline immediately. The controller takes some time to elect leaders and notify the brokers to assume the new leader role. Following this, clients take some time to send metadata requests and discover the new leaders. If the broker is stopped and restarted quickly, clients that have not discovered the new leader keep sending requests to the newly restarted broker. The exceptions are throws since the newly restarted broker is not the leader for any partition.
+		
+18. 	How to choose number of partitions in kafka?	
+		Partitions = Desired Throughput / Partition Speed
+		Conservatively, you can estimate that a single partition for a single Kafka topic runs at 10 MB/s.

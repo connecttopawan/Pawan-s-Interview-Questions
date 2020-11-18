@@ -1,0 +1,49 @@
+1. Singleton Object:
+	A singleton object provides an entry point to your program execution. 
+	Scala does not contain any concept of static keyword. Instead of static keyword Scala has singleton object. 
+	You are not allowed to create an instance of singleton object.
+	object Main 
+	{ 
+		def main(args: Array[String])  
+		{ 
+			
+			// Creating object of AreaOfRectangle class 
+			var obj = new AreaOfRectangle(); 
+			obj.area(); 
+		} 
+	} 
+	
+2. Companion object is known as an object whose name is same as the name of the class.
+	object ExampleofCompanion 
+	{ 
+		def main(args: Array[String])  
+		{ 
+			var obj = new ExampleofCompanion(); 
+			obj.show(); 
+		} 
+	}
+	
+3. case class employee (name:String, age:Int) 
+	object Main  
+	{  
+		// Main method 
+		def main(args: Array[String])  
+		{  
+			var c = employee("Nidhi", 23) 
+			
+			// Display both Parameter  
+			println("Name of the employee is " + c.name);  
+			println("Age of the employee is " + c.age);  
+		}  
+	}  
+	
+4. Abstract Class
+	Abstraction is the process to hide the internal details and showing only the functionality and cannot support multiple inheritances. A class can extend only one abstract class.
+	
+5. Traits
+	A trait is like an interface which is collection of abstract and non-abstract methods
+	If a class implements multiple traits, it will extend the first trait, class, abstract class. with keyword is used to extend rest of the traits.
+	
+6. ofDim() : create multidimensional arrays. var a=ofDim[Int](3,3)
+
+7. Vector : A vector is a general-purpose data structure that is immutable. We can use it when we want to hold a huge number of elements and want random access to them. var v2=Vector(7,2,4,3,1)
