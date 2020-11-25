@@ -107,8 +107,96 @@
 	Let we are having 6 machines with 16 cores and 64 GB RAM each ie. total 96 cores and 384 GB RAM.
 	Smallest executor will be 16/16 core and 64/16 GB of RAM. 96/6 executors on each machine.
 
-18. Repartition vs Coalesce?
+18. Repartition vs Coalesce
 
 19. What kind of problems we will face when there are a lot of small files in hadoop?
 	i. If we have lots of small files in cluster that will increase burden on namenode. bcoz namenode stores the meta data of file so if we have lots of small files name node keep noting address of files and hence if master down cluster also gone down.
 	ii. Spark will also need to create more executor tasks... This will create unnecessary overhead and slow down your data processing.
+	
+20. Spark yarn cluster vs client?
+	In cluster mode, the driver runs in the Application Master, which means that same process is responsible for both driving the application and requesting resources from YARN. In client mode, the driver runs in the client machine.
+	In cluster mode, Spark does not support spark-shell. But client mode supports spark-shell.
+	
+21. Difference between functional and imperative programming?
+
+22. Optimization techniques:
+	i. Serialization: By default, Spark uses Java serializer. Spark can also use another serializer called ‘Kryo’ serializer for better performance. Kryo serializer is in compact binary format and offers processing 10x faster than Java serializer. To set the serializer properties:
+	conf.set(“spark.serializer”, “org.apache.spark.serializer.KryoSerializer”)
+	
+23. How to add index column in spark dataframe?
+	df.withColumn("id",monotonicallyIncreasingId)
+	
+24. How to limit the number of retries on Spark job failure in YARN?
+	spark-submit --conf spark.yarn.maxAppAttempts=1 <application_name>
+	
+25. Is there any way to get Spark Application id, while running a job?
+	sc.applicationId
+	
+26. A spark job is getting failed with "no space left on device" but when I ran df -h to check the space then it is showing it is having space. How will you fix this.
+		By default Spark uses the /tmp directory to store intermediate data. If you actually do have space left on some device -- you can alter this by creating the file SPARK_HOME/conf/spark-defaults.conf and adding the line. Here SPARK_HOME is wherever you root directory for the spark install is.
+		spark.local.dir                     SOME/DIR/WHERE/YOU/HAVE/SPACE
+
+27. How to open .zip files through spark?
+		import zipfile
+		import io
+	
+		def zip_extract(x):
+		in_memory_data = io.BytesIO(x[1])
+		file_obj = zipfile.ZipFile(in_memory_data, "r")
+		files = [i for i in file_obj.namelist()]
+		return dict(zip(files, [file_obj.open(file).read() for file in files]))
+
+
+		zips = sc.binaryFiles("hdfs:/Testing/*.zip")
+		files_data = zips.map(zip_extract).collect()
+
+28. How to read a AWS S3 file in Spark?
+		val spark: SparkSession = SparkSession.builder()
+			.master("local[1]")
+			.appName("SparkByExamples.com")
+			.getOrCreate()
+		// Replace Key with your AWS account key (You can find this on IAM 
+		spark.sparkContext
+			.hadoopConfiguration.set("fs.s3a.access.key", "awsaccesskey value")
+		service)
+		// Replace Key with your AWS secret key (You can find this on IAM 
+		spark.sparkContext
+			.hadoopConfiguration.set("fs.s3a.secret.key", "aws secretkey value")
+		spark.sparkContext
+			.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
+		println("##spark read text files from a directory into RDD")
+		val rddFromFile = spark.sparkContext.textFile("s3a://sparkbyexamples/csv/text01.txt")
+		println(rddFromFile.getClass)
+		
+		println("##Get data Using collect")
+		rddFromFile.collect().foreach(f=>{
+			println(f)
+		})
+
+30. How to change column types in Spark SQL DataFrame?
+		val df2 = df.withColumn("yearTmp", df.year.cast(IntegerType))
+			.drop("year")
+			.withColumnRenamed("yearTmp", "year")
+		
+31. I've got big RDD(1gb) in yarn cluster. I can't use collect() How to handle this?
+		RDD.toLocalIterator method an efficient way to do the job. It uses runJob to evaluate only a single partition on each step.
+		As for the toLocalIterator, it is used to collect the data from the RDD scattered around your cluster into one only node, the one from which the program is running, and do something with all the data in the same node. It is similar to the collect method, but instead of returning a List it will return an Iterator.
+		rdd.toLocalIterator()
+
+32. Is there any way for Spark to create primary keys?
+		df.withColumn("id", monotonicallyIncreasingId).show()
+		monotonicallyIncreasingId function which should work just fine as long as you don't require consecutive numbers.
+		
+33. How to add a constant column in a Spark DataFrame?
+		val newdf = df.withColumn("newcol",lit("myval"))
+
+34. While processing CSV file resultant output is multiple file, wanted single file?
+
+35. How do I skip a header from CSV files in Spark?
+
+36. Explain the difference between Spark SQL and Hive?
+
+37. How to transpose Spark DataFrame?
+		val new_schema = StructType(df1.select(collect_list("Column")).first().getAs[Seq[String]](0).map(z => StructField(z, StringType)))
+		val new_values = sc.parallelize(Seq(Row.fromSeq(df.select(collect_list("Value")).first().getAs[Seq[String]](0))))
+		sqlContext.createDataFrame(new_values, new_schema).show(false)
