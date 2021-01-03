@@ -200,3 +200,24 @@
 		val new_schema = StructType(df1.select(collect_list("Column")).first().getAs[Seq[String]](0).map(z => StructField(z, StringType)))
 		val new_values = sc.parallelize(Seq(Row.fromSeq(df.select(collect_list("Value")).first().getAs[Seq[String]](0))))
 		sqlContext.createDataFrame(new_values, new_schema).show(false)
+		
+38. What is narrow and wide dependency?
+39. Difference between Aggregatebykey & combinebykey?
+40. How to disable broadcast?
+41. How to create replication in spark?
+42. Draw Spark architecture.
+43. How to add one row in dataframe?
+44. How to add column in dataframe?
+45. what is exploid function in spark?
+46. What is Speculation execution?
+47. Create dataframe with JSON file and display some selected fields.
+48. How to Search table in hive through Spark?
+49. Aggregate function in spark and how its working?
+50. How to achive increamental insert and upload in Spark?
+51. How many job and Stage will be there in spark?
+52. How to assign flag D for duplicates and v for unique based on name field in dataframe?
+53. What is partitioner in spark?
+54. Why are we using AVRO fileformat in ingestion of data instead of parquet file?
+55. How to check some partitioned are skewed in spark?
+56. Accumulator is accessible from node or not?
+57. 
