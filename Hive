@@ -7,3 +7,7 @@
 	Deserialization — Process of converting the bytes back into an object in memory.
 
 3. Lateral view and Explode
+4. How Hive table reads data for manage table from external Path of Hdfs?
+5. How to get 3rd highest salary from employee table?
+6. What is Lateral View and explode?
+7. How to remove duplicates from a table?
