@@ -221,4 +221,21 @@
 55. How to check some partitioned are skewed in spark?
 56. Accumulator is accessible from node or not?
 57. How will you handle bad data, let in file few of the values having junk (data of different data type) then should we stop the loading or else can we do?
+	a. To include this data in a separate column: As per the use case, if a user wants us to store a bad record in separate column use option mode as “PERMISSIVE”.
+	Eg: val data = """{"a": 1, "b":2, "c":3}|{"a": 1, "b":2, "c":3}|{"a": 1, "b, "c":10}""".split('|')
+		val corruptDf = spark.read.option("mode", "PERMISSIVE")
+                          .option("columnNameOfCorruptRecord", "_corrupt_record")                          
+                          .json(sc.parallelize(data)
+	b. To ignore all bad records: In this particular use case, if a user doesn’t want to include the bad records at all and wants to store only the correct records use the “DROPMALFORMED” mode.
+		val corruptDf = spark.read.option("mode", "DROPMALFORMED")
+                          .json(sc.parallelize(data)
+	c. Throws an exception when it meets corrupted records: For this use case, if present any bad record will throw an exception. And the mode for this use case will be “FAILFAST”. And it’s a best practice to use this mode in a try-catch block.
+		try {
+  			val corruptDf = spark.read
+  			  .option("mode", "FAILFAST")
+  			  .json(sc.parallelize(data))
+			} catch {
+  			case e:Exception => print(e)
+		}
+
 58. 
