@@ -220,4 +220,5 @@
 54. Why are we using AVRO fileformat in ingestion of data instead of parquet file?
 55. How to check some partitioned are skewed in spark?
 56. Accumulator is accessible from node or not?
-57. 
+57. How will you handle bad data, let in file few of the values having junk (data of different data type) then should we stop the loading or else can we do?
+58. 
