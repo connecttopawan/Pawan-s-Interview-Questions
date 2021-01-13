@@ -25,3 +25,5 @@
 		i. Create IAM role 
 		ii. Add permission to the role by the use of attach-policy-to-role
 		iii. Create function.
+		
+6. Perform batch processing in Lambda.
