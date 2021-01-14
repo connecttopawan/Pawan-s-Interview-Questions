@@ -204,6 +204,7 @@
 38. What is narrow and wide dependency?
 39. Difference between Aggregatebykey & combinebykey?
 40. How to disable broadcast?
+    spark. sql. autoBroadcastJoinThreshold = -1
 41. How to create replication in spark?
 42. Draw Spark architecture.
 43. How to add one row in dataframe?
