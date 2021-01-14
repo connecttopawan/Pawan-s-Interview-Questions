@@ -219,6 +219,9 @@
 53. What is partitioner in spark?
 54. Why are we using AVRO fileformat in ingestion of data instead of parquet file?
 55. How to check some partitioned are skewed in spark?
+    Every SparkContext launches a web UI, by default on port 4040, that displays useful information about the application. This includes:
+    A list of scheduler stages and tasks A summary of RDD sizes and memory usage Environmental information.
+
 56. Accumulator is accessible from worker node or not?
     Tasks on worker nodes cannot access the accumulator’s value.Accumulators are write-only variable for worker nodes.
 57. How will you handle bad data, let in file few of the values having junk (data of different data type) then should we stop the loading or else can we do?
