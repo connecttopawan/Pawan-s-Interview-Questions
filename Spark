@@ -208,6 +208,9 @@
 42. Draw Spark architecture.
 43. How to add one row in dataframe?
 44. How to add column in dataframe?
+    val df = df1.withColumn("newCol", df1("col") + 1) 
+    Or
+    val newDf = df.withColumn("D", when($"B".isNull or $"B" === "", 0).otherwise(1))
 45. what is exploid function in spark?
 46. What is Speculation execution?
 47. Create dataframe with JSON file and display some selected fields.
