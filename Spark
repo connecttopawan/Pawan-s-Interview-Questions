@@ -238,4 +238,10 @@
   			case e:Exception => print(e)
 		}
 
-58. 
+58. What is On-Heap memory and Off-Heap memory?
+    Executor acts as a JVM process, and its memory management is based on the JVM. So JVM memory management includes two methods:
+    On-Heap memory management: Objects are allocated on the JVM heap and bound by GC.
+    Off-Heap memory management: Objects are allocated in memory outside the JVM by serialization, managed by the application, and are not bound by GC. 
+        This memory management method can avoid frequent GC, but the disadvantage is that you have to write the logic of memory allocation and memory release.
+    In general, the objects' read and write speed is:
+    on-heap > off-heap > disk
