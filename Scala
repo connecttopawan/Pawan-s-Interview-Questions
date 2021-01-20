@@ -47,3 +47,9 @@
 6. ofDim() : create multidimensional arrays. var a=ofDim[Int](3,3)
 
 7. Vector : A vector is a general-purpose data structure that is immutable. We can use it when we want to hold a huge number of elements and want random access to them. var v2=Vector(7,2,4,3,1)
+
+8. Closures: Closures are functions which uses one or more free variables and the return value of this function is dependent of these variable. 
+	The free variables are defined outside of the Closure Function and is not included as a parameter of this function.
+	
+9. Implicits: Implicit parameters are the parameters that are passed to a function with implicit keyword in Scala, which means the values will be taken from the context in which they are called. 
+	If no value or parameter is passed to a method or function, then the compiler will look for implicit value and pass it further as the parameter.
