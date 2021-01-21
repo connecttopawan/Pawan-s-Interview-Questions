@@ -44,3 +44,21 @@
 
 13. cluster node 30
 	cluster size 60 TB
+	
+14. What is rack?
+	The Rack is the collection of around 40-50 DataNodes connected using the same network switch. If the network goes down, the whole rack will be unavailable. 
+	A large Hadoop cluster is deployed in multiple racks. Rack awareness policies which says:
+	--> Not more than one replica be placed on one node.
+	--> Not more than two replicas are placed on the same rack.
+	--> Also, the number of racks used for block replication should always be smaller than the number of replicas.
+	
+15. How can we restart name node and demons in hdfs?
+	First stop
+	$HADOOP_HOME/bin/stop.dfs.sh
+	$HADOOP_HOME/bin/hadoop-daemon.sh stop namenode
+	Then start again
+	$HADOOP_HOME/bin/start.dfs.sh
+	$HADOOP_HOME/bin/hadoop-daemon.sh start namenode
+	To restart all daemons use the following command which deprecated
+	$HADOOP_HOME/bin/stop.all.sh
+	$HADOOP_HOME/bin/start.all.sh
