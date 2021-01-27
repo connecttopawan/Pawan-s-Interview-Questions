@@ -62,3 +62,7 @@
 	To restart all daemons use the following command which deprecated
 	$HADOOP_HOME/bin/stop.all.sh
 	$HADOOP_HOME/bin/start.all.sh
+
+16. how to check health of any file system in hdfs?
+	HDFS fsck is used to check the health of the file system, to find missing files, over replicated, under replicated and corrupted blocks.
+	hdfs fsck /
