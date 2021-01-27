@@ -253,3 +253,16 @@
         This memory management method can avoid frequent GC, but the disadvantage is that you have to write the logic of memory allocation and memory release.
     In general, the objects' read and write speed is:
     on-heap > off-heap > disk
+    
+59. Explain typesafety in Dataframe and dataset with example?
+	Let we have a case class as:
+	case class Student (name : String, Age: Integer, dept: String) 
+	and having a rdd named as rdd.
+	val dataFrame= rdd.toDF()
+	val dataset=rdd.toDS()
+	Suppose we need to perform any filter operation:
+	val dsResult = dataset.filter(x=>x.age>17)
+	This will work fine.
+	val dfResult = dataFrame.filter(x=>x.age>17)
+	This will through an error, so we can't use column name directly with dataframe, to avoid this we need to typecast.
+	val dfResult = dataFrame.filter(x=>x.getAs[Int]["age"]>17)
