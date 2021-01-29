@@ -202,6 +202,10 @@
 		sqlContext.createDataFrame(new_values, new_schema).show(false)
 		
 38. What is narrow and wide dependency?
+	Narrow Transformation: When each partition at the parent RDD is used by at most one partition of the child RDD or when each partition from child produced or dependent on single parent RDD.
+	Eg: map, flatmap, filter
+	Wide Transformation: When each partition at the parent RDD is used by multiple partitions of the child RDD or when each partition from child produced or dependent on multiple parent RDD.
+	Eg: join, groupbykey
 39. Difference between Aggregatebykey & combinebykey?
 40. How to disable broadcast?
     spark. sql. autoBroadcastJoinThreshold = -1
@@ -220,7 +224,11 @@
 50. How to achive increamental insert and upload in Spark?
 51. How many job and Stage will be there in spark?
 52. How to assign flag D for duplicates and v for unique based on name field in dataframe?
+	val df_count=df.select(*).groupBy("col1").count()
+	val df_flag= df_count.withColumn("Flag",when ("count>1","D").otherwise("v"))
 53. What is partitioner in spark?
+	Partitioner is an object that defines how the elements in a key-value pair RDD are partitioned by key. It maps each key to a partition ID, from 0 to (number of partitions – 1).
+	There are 3 types of partitioners in spark: (1) Hash-Partitioner (2) Range-Partitioner (3) One can make its Custom Partitioner
 54. Why are we using AVRO fileformat in ingestion of data instead of parquet file?
 55. How to check some partitioned are skewed in spark?
     Every SparkContext launches a web UI, by default on port 4040, that displays useful information about the application. This includes:
@@ -266,3 +274,12 @@
 	val dfResult = dataFrame.filter(x=>x.age>17)
 	This will through an error, so we can't use column name directly with dataframe, to avoid this we need to typecast.
 	val dfResult = dataFrame.filter(x=>x.getAs[Int]["age"]>17)
+
+60. How to select distinct records from a dataframe.
+	val dropDisDF = df.dropDuplicates("department","salary")
+	
+61. Difference between map & map partitioner?
+	If there are 2000 row and 20 partitions, then each partition will contain the 2000/20=100 Rows.
+	Now, when we apply map(func) method to rdd, the func() operation will be applied on each and every Row and in this particular case func() operation will be called 2000 times. i.e. time-consuming in some time-critical applications.
+	If we call mapPartition(func) method on rdd, the func() operation will be called on each partition instead of each row. In this particular case, it will be called 20 times(number of the partition). 
+	In this way, you can prevent some processing when it comes to time-consuming application.
