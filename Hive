@@ -9,5 +9,78 @@
 3. Lateral view and Explode
 4. How Hive table reads data for manage table from external Path of Hdfs?
 5. How to get 3rd highest salary from employee table?
+
+select a.name from (
+select name,dense_rank() over (partition by emp_dept  order by sal desc ) rnk from employee ) a where a.rnk <=3 
+
 6. What is Lateral View and explode?
 7. How to remove duplicates from a table?
+8. How To Convert External table to Internal table or vice-versa in Big Data Hadoop
+
+Use the following command to convert an external table to an internal table:
+    use <db name>;
+    ALTER TABLE <tablename> SET TBLPROPERTIES('EXTERNAL'='FALSE');
+Use the following command to convert an internal table to an external table:
+    use <db name>;
+    ALTER TABLE <tablename> SET TBLPROPERTIES('EXTERNAL'='TRUE');
+9. write hive table create staement for below given data.
+SrNo|Name|Age|Sal
+1|ABC|25|20k
+|BCD||25k
+2|50|30k
+3|XYZ|
+ Soln: 
+ 
+CREATE TABLE CDR
+(
+SrNo                 int,
+Name                 string,
+Age                 int
+sal		    int
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+**TBLPROPERTIES('serialization.null.format'='' , skip.header.line.count"="1);**
+
+10. Senario
+Customer -- Table 1
+CUST_ID
+NAME
+REGION
+ADDRESS
+Product -- Table  2
+PROD_ID
+PROD_NAME
+PROD_DESC
+PROD_PRICE
+transactions -- Table 3
+CUST_ID
+TXN_ID
+TXN_AMT
+PROD_NAME
+PROD_ID
+PURCHASE_DATE
+Please provide SQL query for the below questions :
+1) Product which has been purchased by large number of consumers
+2) Product which has not been sold so far
+3) Customer who has purchased any product more than once per day.
+
+11. Senario: write hive quesry
+
+team
+TeamA       TeamB       WonBy
+Pakistan    India       India
+Sri Lanka   India       India
+Bangladesh  India       India
+Sri Lanka   Pakistan    Sri Lanka
+Bangladesh  Pakistan    Bangladesh
+Bangladesh  Sri Lanka   Sri Lanka
+India       Sri Lanka   India
+
+Expected Output
+Team    MatchesPlayed   MatchesWon
+Bangladesh  3               1
+India       4               4
+Pakistan    3               0
+Sri Lanka   4               2
+
+
