@@ -284,70 +284,88 @@
 	If we call mapPartition(func) method on rdd, the func() operation will be called on each partition instead of each row. In this particular case, it will be called 20 times(number of the partition). 
 	In this way, you can prevent some processing when it comes to time-consuming application.
 62. Senario. 
-domain,url
-google.com,http://google.com/ abc
-facebook.com,http://facebook.com/abc
-google.com,http://google.com/cde
-google.com,http://google.com/abc
-facebook.com,http://facebook.com/xyz
-google.com,http://google.com/cde
-google.com,http://google.com/srt
+	domain,url
+	google.com,http://google.com/ abc
+	facebook.com,http://facebook.com/abc
+	google.com,http://google.com/cde
+	google.com,http://google.com/abc
+	facebook.com,http://facebook.com/xyz
+	google.com,http://google.com/cde
+	google.com,http://google.com/srt
 
-Give me the count of unique urls' across the domain.
-Output: 
-google.com, 3
-facebook.com, 2
+	Give me the count of unique urls' across the domain.
+	Output: 
+	google.com, 3
+	facebook.com, 2
 
 63. Senario
-input csv file 
-+---------+----+
-|     Date| Amt|
-+---------+----+
-|01-Jan-20|  10|
-|28-Feb-20|  20|
-|31-Mar-20|null|
-|30-Apr-20|  30|
-|31-May-20|null|
-|30-Jun-20|null|
-|31-Jul-20|  40|
-+---------+----+
-#final output 
-+---------+---+---------------+-------+
-|     Date|amt|Cummulative_Sum|    AFY|
-+---------+---+---------------+-------+
-|01-Jan-20| 10|             10|2019-20|
-|28-Feb-20| 20|             30|2019-20|
-|31-Mar-20| 20|             30|2019-20|
-|30-Apr-20| 30|             60|2020-21|
-|31-May-20| 30|             60|2020-21|
-|30-Jun-20| 30|             60|2020-21|
-|31-Jul-20| 40|            100|2020-21|
-+---------+---+---------------+-------+
+	input csv file 
+	+---------+----+
+	|     Date| Amt|
+	+---------+----+
+	|01-Jan-20|  10|
+	|28-Feb-20|  20|
+	|31-Mar-20|null|
+	|30-Apr-20|  30|
+	|31-May-20|null|
+	|30-Jun-20|null|
+	|31-Jul-20|  40|
+	+---------+----+
+	#final output 
+	+---------+---+---------------+-------+
+	|     Date|amt|Cummulative_Sum|    AFY|
+	+---------+---+---------------+-------+
+	|01-Jan-20| 10|             10|2019-20|
+	|28-Feb-20| 20|             30|2019-20|
+	|31-Mar-20| 20|             30|2019-20|
+	|30-Apr-20| 30|             60|2020-21|
+	|31-May-20| 30|             60|2020-21|
+	|30-Jun-20| 30|             60|2020-21|
+	|31-Jul-20| 40|            100|2020-21|
+	+---------+---+---------------+-------+
 
-Soln: 
------ Solution using pyspark and spark sql-----
-from pyspark.sql import Window
-from pyspark.sql import *
-from pyspark.sql import functions as F
-from pyspark.sql.functions import unix_timestamp, from_unixtime
+	Soln: 
+	----- Solution using pyspark and spark sql-----
+	from pyspark.sql import Window
+	from pyspark.sql import *
+	from pyspark.sql import functions as F
+	from pyspark.sql.functions import unix_timestamp, from_unixtime
 
-# read data from csv file
-book_data=spark.read.format("csv").option("header", "True").option("inferSchema","True").load("/FileStore/tables/Book_7.csv")
-book_data.show()
-#changeing date format and and data type
-from pyspark.sql.functions import unix_timestamp, from_unixtime
-book_date_1=book_data.withColumn("date_1",from_unixtime(unix_timestamp('Date', 'dd-MMM-yy')))
-book_date_1.show()
-#to calculate commulative sum 
-windowval = (Window.orderBy('date_1')
-             .rangeBetween(Window.unboundedPreceding, 0))
-df_w_cumsum = book_date_1.withColumn('Cummulative_Sum', F.sum('amt').over(windowval))
+	# read data from csv file
+	book_data=spark.read.format("csv").option("header", "True").option("inferSchema","True").load("/FileStore/tables/Book_7.csv")
+	book_data.show()
+	#changeing date format and and data type
+	from pyspark.sql.functions import unix_timestamp, from_unixtime
+	book_date_1=book_data.withColumn("date_1",from_unixtime(unix_timestamp('Date', 'dd-MMM-yy')))
+	book_date_1.show()
+	#to calculate commulative sum 
+	windowval = (Window.orderBy('date_1')
+	             .rangeBetween(Window.unboundedPreceding, 0))
+	df_w_cumsum = book_date_1.withColumn('Cummulative_Sum', F.sum('amt').over(windowval))
+	
+	#Fill missing value with last value for amt field
+	df_w_cumsum_1=df_w_cumsum.withColumn('amt',F.last('amt',True).over(windowval))
+	
+	#register dataframe as temp table 
+	df_w_cumsum_1.registerTempTable("table")
+	
+	#AFY column derivation on temp table and select required columns
+	spark.sql("select Date,amt,Cummulative_Sum,case when month(date_1)<4 then concat((year(date_1)-1),'-',substr(date_1,3,2)) else concat((year(date_1)),'-',substr(add_months(date_1,12),3,2))end AFY from table ").show()
 
-#Fill missing value with last value for amt field
-df_w_cumsum_1=df_w_cumsum.withColumn('amt',F.last('amt',True).over(windowval))
-
-#register dataframe as temp table 
-df_w_cumsum_1.registerTempTable("table")
-
-#AFY column derivation on temp table and select required columns
-spark.sql("select Date,amt,Cummulative_Sum,case when month(date_1)<4 then concat((year(date_1)-1),'-',substr(date_1,3,2)) else concat((year(date_1)),'-',substr(add_months(date_1,12),3,2))end AFY from table ").show()
+64. csv file is having data as:
+	+----------+----------+
+	|emp_length|      term|
+	+----------+----------+
+	| 10+ years| 36 months|
+	|  < 1 year| 60 months|
+	| 10+ years| 36 months|
+	| 10+ years| 36 months|
+	|    1 year| 60 months|
+	|   3 years| 36 months|
+	|   8 years| 60 months|
+	How will you keep only numerical part.
+	Sol: Two approches are there through regular expression viz regexp_extract and regexp_replace
+	Through regexp_extract:
+	df_sel.withColumn("emp_length_num", regexp_extract(col("emp_length"),"\\d+",0)).withColumn("term_num",regexp_extract(col("term"),"\\d+",0)
+	Through regexp_replace:
+	df_sel.withColumn("emp_length_num",regexp_replace(col("emp_length"),"years|year|\\+|\\<","")).withColumn("term_num",regexp_replace(col("term"),"months|month|\\+|\\<",""))
