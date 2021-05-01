@@ -366,6 +366,9 @@
 	How will you keep only numerical part.
 	Sol: Two approches are there through regular expression viz regexp_extract and regexp_replace
 	Through regexp_extract:
-	df_sel.withColumn("emp_length_num", regexp_extract(col("emp_length"),"\\d+",0)).withColumn("term_num",regexp_extract(col("term"),"\\d+",0)
+	df.withColumn("emp_length_num", regexp_extract(col("emp_length"),"\\d+",0)).withColumn("term_num",regexp_extract(col("term"),"\\d+",0)
 	Through regexp_replace:
-	df_sel.withColumn("emp_length_num",regexp_replace(col("emp_length"),"years|year|\\+|\\<","")).withColumn("term_num",regexp_replace(col("term"),"months|month|\\+|\\<",""))
+	df.withColumn("emp_length_num",regexp_replace(col("emp_length"),"years|year|\\+|\\<","")).withColumn("term_num",regexp_replace(col("term"),"months|month|\\+|\\<",""))
+
+65. How will you count null of each column in a dataframe.
+    Sol: df.select([count(col(c).isNull()).alias(c+" count") for c in df.columns])
