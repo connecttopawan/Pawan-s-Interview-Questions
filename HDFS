@@ -66,3 +66,14 @@
 16. how to check health of any file system in hdfs?
 	HDFS fsck is used to check the health of the file system, to find missing files, over replicated, under replicated and corrupted blocks.
 	hdfs fsck /
+	
+17. What is Xms and Xmx memory in JVM?
+	-xmx and -xms are the parameters used to adjust the heap size.
+	-Xms: It is used for setting the initial and minimum heap size. This means that your JVM will be started with Xms amount of memory. It is recommended to set the minimum heap size equivalent to the maximum heap size in order to minimize the garbage collection.
+	-Xmx: It is used for setting the maximum heap size. This means that your JVM will be able to use a maximum of Xmx amount of memory. The performance will decrease if the max heap value is set lower than the amount of live data. It will force frequent garbage collections in order to free up space.
+	So it is like when memory usage exceeds beyond Xmx we get jvm out of memory exception. When it tries to exceed that, although it may collect garbage to try to free up enough memory. If there still isn't enough memory to satisfy the request and the heap has already reached the maximum size, an OutOfMemoryError will occur.
+
+	The Xms flag has no default value, and Xmx typically has a default value of 256 MB. A common use for these flags is when you encounter a java.lang.OutOfMemoryError.
+	We can set them as below:
+	-Xms64m or -Xms64M
+	-Xmx1g or -Xmx1G
