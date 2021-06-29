@@ -47,3 +47,9 @@ def lambda_handler(event, context):
 	We can import it through layers. Steps are as:
 		i. Upload a package zip file on a S3 bucket. (when size > 10 MB)
 		ii. Create layer on lambda function and provide S3 url or directly upload a zip file. 
+		
+5# Tell 5 S3 commands which you have used?
+	aws s3 mb	aws s3 rm	aws s3 ls	aws s3 cp	aws s3 mv
+	
+6# Type of EC2 Instances?
+	R: Memory Optimized	C: Compute optimized	M: Medium	I: Storage Optimized	G: GPU	T: Brustable
