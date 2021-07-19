@@ -1,0 +1,58 @@
+1# Transfer Data from S3 to Redshift:
+	i. Place files in S3 buckets
+	ii. Add classifiers to identify JSON, csv or XML files (here we provide headings, delimeter etc.)
+	iii. Create crawler to create metadata of S3 files (source) in Data Catalog.
+	iv. Add connection to establish connection to Amazon Redshift.
+	v. Create crawler to create metadata of Redshift table (target) in Data Catalog.
+	vi. Add Job and provide spark script.
+	
+2# How to import data from my existing Apache Hive Metastore to the AWS Glue Data Catalog?
+	Through EMR console, we can configure Hive to use the AWS Glue Data Catalog as its metastore.
+	i. Create EMR cluster.
+	ii. Go to advanced options.
+	iii. Under Release, we need to select Hive or HCatalog.
+	iv. Under AWS Glue Data Catalog settings select Use for Hive table metadata.
+
+3# How to configure the crawler to adds, updates, and deletes tables and partitions?
+
+4# What is dynamic frame?
+	A DynamicFrame is similar to a DataFrame, except that each record is self-describing, so no schema is required initially.A DynamicFrame is similar to a DataFrame, except that each record is self-describing, so no schema is required initially.
+	DynamicFrame is safer when handling memory intensive jobs. "The executor memory with AWS Glue dynamic frames never exceeds the safe threshold," while on the other hand, Spark DataFrame could hit "Out of memory" issue on executors.
+	
+5# How to convert dynamic frame to data frame and vice-versa?
+	DynamicFrame to DataFrame: .toDF()
+	DataFrame to DynamicFrame: .fromDF()
+
+6# Sample ETL script:
+	import sys
+	from awsglue.transforms import *
+	from awsglue.utils import getResolvedOptions
+	from pyspark.context import SparkContext
+	from awsglue.context import GlueContext
+	from awsglue.job import Job
+	from awsglue.dynamicframe import DynamicFrame
+	
+	sparkContext = SparkContext()
+	glueContext = GlueContext(sparkContext)
+	sparkSession = glueContext.spark_session
+	
+	source_df = sparkSession.read.format("jdbc").option("url","jdbc:sparksql:RTK=5246...;Server=127.0.0.1;").option("dbtable","Customers").option("driver","cdata.jdbc.sparksql.SparkSQLDriver").load()
+ 
+	glueJob = Job(glueContext)
+	glueJob.init(args['JOB_NAME'], args)
+ 
+	##Convert DataFrames to AWS Glue's DynamicFrames Object
+	dynamic_dframe = DynamicFrame.fromDF(source_df, glueContext, "dynamic_df")
+ 
+	##Write the DynamicFrame as a file in CSV format to a folder in an S3 bucket.
+	##It is possible to write to any Amazon data store (SQL Server, Redshift, etc) by using any previously defined connections.
+	retDatasink4 = glueContext.write_dynamic_frame.from_options(frame = dynamic_dframe, connection_type = "s3", connection_options = {"path": "s3://mybucket/outfiles"}, format = "csv", transformation_ctx = "datasink4")
+ 
+	glueJob.commit()
+	
+7# Run Redshift queries from glue? 
+
+8# Kafka with Glue?
+	i. We need to create a glue connection by using connection type "Kafka".(Provide bootstrap server)
+	ii. Crawler won't work here, so we manually have to create a Data Catalog table that specifies source data stream properties, including the data schema.(Type of source as Kafka, topic name, type of file, define schema)
+	iii. Add Job and provide spark script.
