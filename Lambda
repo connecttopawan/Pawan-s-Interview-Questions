@@ -1,0 +1,55 @@
+1# Reading a file content from S3 on AWS lambda.
+
+import boto3
+def lambda_handler(event, context):
+    #defining S3 bucket
+    s3=boto3.client("s3")
+    if event:
+        print("Event : ",event)
+        #defining file object
+        file_obj=event["Records"][0]
+        file_name=str(file_obj["s3"]["object"]["key"])
+        print("File name : ",file_name)
+        file_obj=s3.get_object(Bucket="s3-test-bucket-connecttopawan", Key=file_name)
+        file_content=file_obj["Body"].read().decode("utf-8")
+        print(file_content)
+    return "Thanks"
+	
+	
+2# Setting a cron job 
+	Steps are as:
+	i. Create a lambda function.
+	ii. Provide IAM role and attach Cloudwatch full access (to check logs in cloudwatch)
+	iii. Add a trigger cloudwatch event.
+	iv. Add new rules to trigger (Rule type Schedule expression).
+	v. Set Schedule expression as rate(5 minutes).
+	vi. Go to cloud watch and check logs.
+
+3# Invoke lambda function from another lambda function
+	i. Create a lambda function func1.
+	ii. Create an IM role named lambda_basic_execution.
+	iii. Attach AWSLambdaRole policy to created IAM.
+	iv. Create another function func2.
+	v. Assign created IAM role to func2.
+	vi. Go to func1 and code as:
+		import boto3, json
+		def lambda_handler(event, context):
+			invoke_lam=boto3.client("lambda",region_name="us-east-2")
+			payload={"Message": "Lambda function is being invoked"}
+			resp=invoke_lam.invoke(FunctionName="func2", InvocationType="Event", Payload=json.dumps(payload))
+			return "Thanks"
+	vii. Go to func2 and code as:
+			def lambda_handler(event, context):
+				print("Lambda function has been invoked")
+				return "Thanks : func2"
+				
+4# How can we import external libraries like panda, numpy or pyspark etc in our lambda function?
+	We can import it through layers. Steps are as:
+		i. Upload a package zip file on a S3 bucket. (when size > 10 MB)
+		ii. Create layer on lambda function and provide S3 url or directly upload a zip file. 
+		
+5# Tell 5 S3 commands which you have used?
+	aws s3 mb	aws s3 rm	aws s3 ls	aws s3 cp	aws s3 mv
+	
+6# Type of EC2 Instances?
+	R: Memory Optimized	C: Compute optimized	M: Medium	I: Storage Optimized	G: GPU	T: Brustable
