@@ -378,3 +378,5 @@
     Sol: No of partitions in sample_df=10,000 same as original df because partition will be inherited. Here we will having 10,000 part-files.
     
 67. Difference between executor and executor core.
+
+68. What is dynamic partition pruning?
