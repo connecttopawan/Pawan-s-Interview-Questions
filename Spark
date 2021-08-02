@@ -179,20 +179,28 @@
 			.withColumnRenamed("yearTmp", "year")
 		
 31. I've got big RDD(1gb) in yarn cluster. I can't use collect() How to handle this?
-		RDD.toLocalIterator method an efficient way to do the job. It uses runJob to evaluate only a single partition on each step.
-		As for the toLocalIterator, it is used to collect the data from the RDD scattered around your cluster into one only node, the one from which the program is running, and do something with all the data in the same node. It is similar to the collect method, but instead of returning a List it will return an Iterator.
-		rdd.toLocalIterator()
+	RDD.toLocalIterator method an efficient way to do the job. It uses runJob to evaluate only a single partition on each step.
+	As for the toLocalIterator, it is used to collect the data from the RDD scattered around your cluster into one only node, the one from which the program is running, and do something with all the data in the same node. It is similar to the collect method, but instead of returning a List it will return an Iterator.
+	rdd.toLocalIterator()
 
 32. Is there any way for Spark to create primary keys?
-		df.withColumn("id", monotonicallyIncreasingId).show()
-		monotonicallyIncreasingId function which should work just fine as long as you don't require consecutive numbers.
+	df.withColumn("id", monotonicallyIncreasingId).show()
+	monotonicallyIncreasingId function which should work just fine as long as you don't require consecutive numbers.
 		
 33. How to add a constant column in a Spark DataFrame?
-		val newdf = df.withColumn("newcol",lit("myval"))
+	val newdf = df.withColumn("newcol",lit("myval"))
 
 34. While processing CSV file resultant output is multiple file, wanted single file?
+	We can use coalesce or repartition.
+	df.repartition(1).write.mode ("overwrite").format("csv").option("header", "true") .save("filename.csv")
 
 35. How do I skip a header from CSV files in Spark?
+	In spark 2.0 onward:
+		spark.read.option("header","true").csv("filePath")
+	Programatically:
+		data = sc.textFile('path_to_data')
+		header = data.first() #extract header
+		data = data.filter(row => row != header) 
 
 36. Explain the difference between Spark SQL and Hive?
 
