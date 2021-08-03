@@ -215,6 +215,16 @@
 	Wide Transformation: When each partition at the parent RDD is used by multiple partitions of the child RDD or when each partition from child produced or dependent on multiple parent RDD.
 	Eg: join, groupbykey
 39. Difference between Aggregatebykey & combinebykey?
+	GroupByKey is very costly operation because of shuffling k-v pair. GroupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers.There are alternatives for this viz AggregateByKey, CombineByKey and reduceByKey.
+	CombineByKey takes 3 parameter viz create combiner, Combiner function and merger function.
+		For combiner, there is lambda function which convert it into kv-pair.
+		Combiner function, combines the values within partition.
+		Merger function, combines the values across the partiton.
+	AggregateByKey takes 3 parameter viz initial value, Combiner function and merger function.
+		Initial value which is also known as an accumulator.
+		Combiner function, combines the values within partition.
+		Merger function, combines the values across the partiton.
+	AggregateByKey return result in different type.
 40. How to disable broadcast?
     spark. sql. autoBroadcastJoinThreshold = -1
 41. How to create replication in spark?
