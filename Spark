@@ -271,6 +271,14 @@
 	Step 3:	Perform Merger function, combines the values across the partiton.
 	
 50. How to achieve incremental insert and upload in Spark?
+	Approach 1: Union both the dataframes (old and new) then remove duplicates.
+		list1 = [(1, 'abc'),(2,'def')]
+ 		olddf = spark.createDataFrame(list1, ['id', 'value'])
+		list2 = [(2, 'cde'),(3,'xyz')]
+		newdf = spark.createDataFrame(list2, ['id', 'value'])
+		olddf.union(newdf).dropDuplicates(["id"]).show()
+	Approach 2: df = olddf.join(newdf, olddf.id == newdf.id,'full_outer').select(coalesce(olddf.id,newdf.id).alias("id"),coalesce(newdf.value,olddf.value).alias("value"))
+	
 51. How many job and Stage will be there in spark?
 52. How to assign flag D for duplicates and v for unique based on name field in dataframe?
 	val df_count=df.select(*).groupBy("col1").count()
