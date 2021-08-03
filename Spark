@@ -214,6 +214,7 @@
 	Eg: map, flatmap, filter
 	Wide Transformation: When each partition at the parent RDD is used by multiple partitions of the child RDD or when each partition from child produced or dependent on multiple parent RDD.
 	Eg: join, groupbykey
+	
 39. Difference between Aggregatebykey & combinebykey?
 	GroupByKey is very costly operation because of shuffling k-v pair. GroupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers.There are alternatives for this viz AggregateByKey, CombineByKey and reduceByKey.
 	CombineByKey takes 3 parameter viz create combiner, Combiner function and merger function.
@@ -225,20 +226,50 @@
 		Combiner function, combines the values within partition.
 		Merger function, combines the values across the partiton.
 	AggregateByKey return result in different type.
+	
 40. How to disable broadcast?
     spark. sql. autoBroadcastJoinThreshold = -1
+    
 41. How to create replication in spark?
+	By Default replication factor is 3 but we can change it by:
+	--spark.yarn.submit.file.replication=5
+	
 42. Draw Spark architecture.
+	There are maily 3 component of spark architecture viz driver, worker and cluster manager.
+	Driver: The driver program runs the main () function of the application and is the place where he Spark Context and RDDs are created, and also where transformations and actions are performed.
+		Spark Driver performs two main tasks: Converting user programs into tasks and planning the execution of tasks by executors.
+	Executor: An executor is a distributed agent responsible for the execution of tasks. Every spark application has its own executor process. Executors usually run for the entire lifetime of a Spark application.
+		Executor performs all the data processing and returns the results to the Driver.Reads from and writes data to external sources.Executor stores the computation results in data in-memory, cache or on hard disk drives.
+	Cluster Manager: An external service is responsible for acquiring resources on the Spark cluster and allocating them to a spark job.
+	
 43. How to add one row in dataframe?
 44. How to add column in dataframe?
     val df = df1.withColumn("newCol", df1("col") + 1) 
     Or
     val newDf = df.withColumn("D", when($"B".isNull or $"B" === "", 0).otherwise(1))
-45. what is exploid function in spark?
-46. What is Speculation execution?
+45. what is explod function in spark?
+	Explode can be used to convert one row into multiple rows in Spark. Whenever we are having array or list and we want to extract each element of array then we can use explode function.
+	
+46. What is Speculative execution?
+	Out of multiple task if few tasks take more time to complete then spark engine kill the task on that executor and restart it on another one. This is called speculative execution.
+	Spark.speculation default value is false If you set to "true", performs speculative execution of tasks.
+	If Spark Streaming writes to Kafka slowly, if speculative execution is enabled, data duplication may result.
+	
 47. Create dataframe with JSON file and display some selected fields.
+	val df = spark.read.json("src/main/resources/zipcodes.json")
+	Assign schema to this:
+	val df_with_schema = spark.read.schema(schema).json("src/main/resources/zipcodes.json")
+	Now through spark sql we can fetch selected fields.
+	
 48. How to Search table in hive through Spark?
+	sqlContext.sql("show tables in db").show()
+	
 49. Aggregate function in spark and how its working?
+	AggregateByKey or reduceByKey approach is fine to explain this.
+	Step 1: Convert the input data to k-v pairs.
+	Step 2: Perform Combiner function, combines the values within partition.
+	Step 3:	Perform Merger function, combines the values across the partiton.
+	
 50. How to achive increamental insert and upload in Spark?
 51. How many job and Stage will be there in spark?
 52. How to assign flag D for duplicates and v for unique based on name field in dataframe?
