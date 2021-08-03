@@ -1,28 +1,39 @@
 1. Singleton Object:
 	A singleton object provides an entry point to your program execution. 
 	Scala does not contain any concept of static keyword. Instead of static keyword Scala has singleton object. 
-	You are not allowed to create an instance of singleton object.
-	object Main 
-	{ 
-		def main(args: Array[String])  
-		{ 
-			
-			// Creating object of AreaOfRectangle class 
-			var obj = new AreaOfRectangle(); 
-			obj.area(); 
-		} 
-	} 
+        Singleton object is an class which is declared by using object keyword instead by class. No object is required to call methods declared inside singleton object.
+        Methods declared inside Singleton Object are accessible globally. A singleton object can extend classes and traits.
+        If you don't create singleton object, your code will compile successfully but will not produce any output.
+
+	object Singleton{  
+             def main(args:Array[String]){  
+                 SingletonObject.hello()         // No need to create object.  
+            }  
+          }  
+  
+        object SingletonObject{  
+             def hello(){  
+                println("Hello, This is Singleton Object")  
+            }  
+           }  
+
 	
-2. Companion object is known as an object whose name is same as the name of the class.
-	object ExampleofCompanion 
-	{ 
-		def main(args: Array[String])  
-		{ 
-			var obj = new ExampleofCompanion(); 
-			obj.show(); 
-		} 
-	}
+2. Companion Object:
+       In scala, when you have a class with same name as singleton object, it is called companion class and the singleton object is called companion object.
 	
+       class ComapanionClass{  
+           def hello(){  
+               println("Hello, this is Companion Class.")  
+           }  
+         }  
+       object CompanionObject{  
+           def main(args:Array[String]){  
+               new ComapanionClass().hello()  
+               println("And this is Companion Object.")  
+           }  
+          }
+	
+
 3. case class employee (name:String, age:Int) 
 	object Main  
 	{  
@@ -39,9 +50,11 @@
 	
 4. Abstract Class
 	Abstraction is the process to hide the internal details and showing only the functionality and cannot support multiple inheritances. A class can extend only one abstract class.
+        A class which is declared with abstract keyword is known as abstract class. An abstract class can have abstract methods and non-abstract methods as well. Abstract class is used to achieve abstraction.
 	
 5. Traits
-	A trait is like an interface which is collection of abstract and non-abstract methods
+	A trait is like an interface in java, when we need to implement multiple inheritance we can't achieve it by class we have to opt traits. 
+        Trait is collection of abstract and non-abstract methods.
 	If a class implements multiple traits, it will extend the first trait, class, abstract class. with keyword is used to extend rest of the traits.
 	
 6. ofDim() : create multidimensional arrays. var a=ofDim[Int](3,3)
@@ -50,6 +63,10 @@
 
 8. Closures: Closures are functions which uses one or more free variables and the return value of this function is dependent of these variable. 
 	The free variables are defined outside of the Closure Function and is not included as a parameter of this function.
+         
+         val p = 10  //p is free variable
+         // define this closure.
+         def example(a:double) = a*p / 100
 	
 9. Implicits: Implicit parameters are the parameters that are passed to a function with implicit keyword in Scala, which means the values will be taken from the context in which they are called. 
 	If no value or parameter is passed to a method or function, then the compiler will look for implicit value and pass it further as the parameter.
