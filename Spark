@@ -354,6 +354,9 @@
 	Output: 
 	google.com, 3
 	facebook.com, 2
+	
+	df_new=df.dropDuplicates("url")
+	df_new.select(*).groupby("domain").count()
 
 63. Senario
 	input csv file 
