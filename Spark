@@ -270,7 +270,7 @@
 	Step 2: Perform Combiner function, combines the values within partition.
 	Step 3:	Perform Merger function, combines the values across the partiton.
 	
-50. How to achive increamental insert and upload in Spark?
+50. How to achieve incremental insert and upload in Spark?
 51. How many job and Stage will be there in spark?
 52. How to assign flag D for duplicates and v for unique based on name field in dataframe?
 	val df_count=df.select(*).groupBy("col1").count()
