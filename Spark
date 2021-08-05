@@ -440,3 +440,12 @@
 67. Difference between executor and executor core.
 
 68. What is dynamic partition pruning?
+
+69. We need to run a scala file in spark shell but we don't want want to create a jar, how can we achieve this?
+	In spark-shell we need to run : "load myFile.scala". It is useful when we are testing our application code before making a jar.
+	
+70. You have list of columns which you need to select from a dataframe. The list gets updated every time you run the application , but the base dataframe ( say df ) remains same.how would you select only columns which are there in the given list for that instance of Run.
+	var newdf= df.select(mycols:_*)
+	
+71. If you have one dataframe df1 and one list which have some qualified cities where you need to run the offers.  but df1 have all the cities where your business is running,How would you get the records only for qualified cities ?
+	var qualified_records= df1.filter($"city".isin(qualified_cities:_ *))
