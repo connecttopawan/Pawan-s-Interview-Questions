@@ -79,4 +79,9 @@
 	Pakistan    3               0
 	Sri Lanka   4               2
 
-
+12. How can you perform update or delete operation on a table?
+	ACID properties are supported by HIVE managed table only. We have to create a managed table with below properties:
+	i. Hive tables should be created with TRANSACTIONAL table property. TBLPROPERTIES (‘transactional’=’true’)
+	ii. Hive supports ACID transactions on tables that store ORC file format.
+	iii. one of the important property need to know is hive.txn.manager which is used to set Hive Transaction manager, by default hive uses DummyTxnManager, to enable ACID, we need to set it to DbTxnManager.
+	
