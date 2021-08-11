@@ -78,13 +78,14 @@
 	India       4               4
 	Pakistan    3               0
 	Sri Lanka   4               2
-Sol:	(Select wonby as team, count(wonby) from team group by wonby) as wonby 
-	(Select teamA, count(teamA) from team group by teamA) as TeamA_count
-	(Select teamB, count(teamB) from team group by teamB) as TeamB_count
-
-	Select teamA,count(teamA)+count(teamB) as matchplayed from TeamA_count
-	join TeamB_count on teamA=teamB
-	join wonby on teamA=team
+Sol:	Select team,matchesplayed,coalesce(won_count,0) as matcheswon from
+	(Select teamA as team, count(teamA) as matchesplayed from(
+	Select teamA from teams
+	union all
+	Select teamB from teams) group by teamA)
+	left join
+	(select wonby as team_won, count(wonby) as won_count from teams group by wonby)
+	on team=team_won;
 	
 12. How can you perform update or delete operation on a table?
 	ACID properties are supported by HIVE managed table only. We have to create a managed table with below properties:
