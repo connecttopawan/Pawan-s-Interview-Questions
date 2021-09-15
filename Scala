@@ -70,3 +70,7 @@
 	
 9. Implicits: Implicit parameters are the parameters that are passed to a function with implicit keyword in Scala, which means the values will be taken from the context in which they are called. 
 	If no value or parameter is passed to a method or function, then the compiler will look for implicit value and pass it further as the parameter.
+	
+10.Higher order function: Higher-order functions are defined as a function that does one or more of the functions as arguments, returns a function as its result.
+	Eg:- sumX(3,5, (x,y)=>x+y)
+	sumX3(3,5, (x,y)=>x*x*x+y*y*y)
