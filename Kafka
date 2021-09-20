@@ -77,3 +77,21 @@
 18. 	How to choose number of partitions in kafka?	
 		Partitions = Desired Throughput / Partition Speed
 		Conservatively, you can estimate that a single partition for a single Kafka topic runs at 10 MB/s.
+		
+19. How will you create TOPIC?
+	bin/kafka-topics.sh --zookeeper localhost:2181 \
+			-- create \
+			-- topic topic_test \
+			-- replication-factor 2 \
+			-- partitions 1
+
+20. How will you delete all messages from TOPIC without deleting topic?
+	bin/kafka-topics.sh --zookeeper localhost:2181 \
+			-- alter -entity-type topics \
+			-- add-config retention.ms=1000 \
+			-- entity-name topic_test
+			
+21. How will you delete a topic?
+	bin/kafka-topics.sh --zookeeper localhost:2181 \
+			-- delete \
+			-- topic topic_test
