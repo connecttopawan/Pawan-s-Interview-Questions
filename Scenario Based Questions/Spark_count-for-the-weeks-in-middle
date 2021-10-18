@@ -1,0 +1,132 @@
+Ques: I have a table like below
+		id      week    count   
+		A100    201008  2    
+		A100    201009  9    
+		A100    201010  16    
+		A100    201011  23    
+		A100    201012  30    
+		A100    201013  36    
+		A100    201015  43    
+		A100    201017  50    
+		A100    201018  57    
+		A100    201019  63    
+		A100    201023  70    
+		A100    201024  82    
+		A100    201025  88    
+		A100    201026  95    
+		A100    201027  102
+	Here, we can see that below weeks are missing :	
+	First 201014 is missing
+	Second 201016 is missing
+	Third weeks missing 201020, 201021, 201022
+	My requirement is whenever we have missing values we need to show the count of previous week.
+	
+	In this case output should be :	
+		id      week    count
+		A100    201008  2    
+		A100    201009  9    
+		A100    201010  16    
+		A100    201011  23    
+		A100    201012  30   
+		A100    201013  36    
+		A100    201014  36    
+		A100    201015  43    
+		A100    201016  43    
+		A100    201017  50    
+		A100    201018  57    
+		A100    201019  63    
+		A100    201020  63
+		A100    201021  63    
+		A100    201022  63    
+		A100    201023  70    
+		A100    201024  82    
+		A100    201025  88    
+		A100    201026  95    
+		A100    201027  102
+	How I can achieve this requirement using hive/pyspark?
+Sol: df = spark.createDataFrame([(1,201901,10),
+                            (1,201903,9),
+                            (1,201904,21),
+                            (1,201906,42),
+                            (1,201909,3),
+                            (1,201912,56)
+                           ],['id','weeknum','val'])
+	df.show()
+		+---+-------+---+
+		| id|weeknum|val|
+		+---+-------+---+
+		|  1| 201901| 10|
+		|  1| 201903|  9|
+		|  1| 201904| 21|
+		|  1| 201906| 42|
+		|  1| 201909|  3|
+		|  1| 201912| 56|
+		+---+-------+---+
+	
+	1) The basic idea is to create a combination of all id's and weeks (starting from the minimum possible value to the maximum) with a cross join.
+
+		from pyspark.sql.functions import min,max,sum,when
+		from pyspark.sql import Window
+		min_max_week = df.agg(min(df.weeknum),max(df.weeknum)).collect()
+		#Generate all weeks using range
+		all_weeks = spark.range(min_max_week[0][0],min_max_week[0][1]+1)
+		all_weeks = all_weeks.withColumnRenamed('id','weekno')
+		#all_weeks.show()
+		id_all_weeks = df.select(df.id).distinct().crossJoin(all_weeks).withColumnRenamed('id','aid')
+		#id_all_weeks.show()
+	
+	2) Thereafter, left joining the original dataframe on to these combinations helps identify missing values.
+
+	res = id_all_weeks.join(df,(df.id == id_all_weeks.aid) & (df.weeknum == id_all_weeks.weekno),'left')
+	res.show()
+		+---+------+----+-------+----+
+		|aid|weekno|  id|weeknum| val|
+		+---+------+----+-------+----+
+		|  1|201911|null|   null|null|
+		|  1|201905|null|   null|null|
+		|  1|201903|   1| 201903|   9|
+		|  1|201904|   1| 201904|  21|
+		|  1|201901|   1| 201901|  10|
+		|  1|201906|   1| 201906|  42|
+		|  1|201908|null|   null|null|
+		|  1|201910|null|   null|null|
+		|  1|201912|   1| 201912|  56|
+		|  1|201907|null|   null|null|
+		|  1|201902|null|   null|null|
+		|  1|201909|   1| 201909|   3|
+		+---+------+----+-------+----+
+	3) Then, use a combination of window functions, sum -> to assign groups and max -> to fill in the missing values once the groups are classified.
+	
+	w1 = Window.partitionBy(res.aid).orderBy(res.weekno)
+	groups = res.withColumn("grp",sum(when(res.id.isNull(),0).otherwise(1)).over(w1))
+	w2 = Window.partitionBy(groups.aid,groups.grp)
+	missing_values_filled = groups.withColumn('filled',max(groups.val).over(w2)) #select required columns as needed
+	missing_values_filled.show() 
+	
+		+---+------+----+-------+----+---+------+
+		|aid|weekno|  id|weeknum| val|grp|filled|
+		+---+------+----+-------+----+---+------+
+		|  1|201901|   1| 201901|  10|  1|    10|
+		|  1|201902|null|   null|null|  1|    10|
+		|  1|201903|   1| 201903|   9|  2|     9|
+		|  1|201904|   1| 201904|  21|  3|    21|
+		|  1|201905|null|   null|null|  3|    21|
+		|  1|201906|   1| 201906|  42|  4|    42|
+		|  1|201907|null|   null|null|  4|    42|
+		|  1|201908|null|   null|null|  4|    42|
+		|  1|201909|   1| 201909|   3|  5|     3|
+		|  1|201910|null|   null|null|  5|     3|
+		|  1|201911|null|   null|null|  5|     3|
+		|  1|201912|   1| 201912|  56|  6|    56|
+		+---+------+----+-------+----+---+------+
+		
+# Hive Approach
+	select id,weeknum,max(val) over(partition by id,grp) as val
+	from (select i.id
+            ,w.weeknum
+            ,t.val
+            ,sum(case when t.id is null then 0 else 1 end) over(partition by i.id order by w.weeknum) as grp 
+      from (select distinct id from tbl) i
+      cross join weeks_table w
+      left join tbl t on t.id = i.id and w.weeknum = t.weeknum
+     ) t

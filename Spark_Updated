@@ -1,0 +1,221 @@
+Ques 1: I'd like to save data in a Spark dataframe to a Hive table using PySpark
+		from pyspark.sql import HiveContext
+        sqlContext = HiveContext(sc)
+        sqlContext.sql("SET spark.sql.hive.convertMetastoreParquet=false")
+        my_dataframe.saveAsTable("my_dataframe")
+    However, when I try to query the saved table in Hive it returns:
+        hive> select * from my_dataframe;
+        OK
+        Failed with exception java.io.IOException:java.io.IOException: 
+        hdfs://hadoop01.woolford.io:8020/user/hive/warehouse/my_dataframe/part-r-00001.parquet
+        not a SequenceFile
+Sol:
+    DataFrame.saveAsTable does not create a Hive table, but an internal Spark table source. We will have data file at given location.
+    So to access those data we need to create hiove external table pointing to that location.
+    CREATE EXTERNAL TABLE my_dataframe (user_id string,email string,ts string)
+                                       PARTITIONED BY(day STRING)
+                                       STORED AS PARQUET
+                                       LOCATION '/apps/hive/warehouse/my_dataframe';
+    MSCK REPAIR TABLE my_dataframe;
+    
+Ques 2: Difference between df.SaveAsTable and spark.sql(Create table..).
+Sol:    df.saveAsTable("mytable"), the table is actually written to storage (HDFS/ S3). It is a Spark action.
+        df.createOrReplaceTempView("my_temp_table") is a transformation. It is just an identifier to be used for the DAG of df. Nothing is actually stored in memory or on disk.
+        spark.sql("create table mytable as select * from my_temp_table") creates mytable on storage.
+        
+Ques 3: How will you Identify the Hive table compression type?
+Sol:    Extension of stored file will show the compression technique.
+        hdfs dfs -ls -r /hdfspath/
+        An ORC file compressed in snappy for example should end in .snappy.orc
+        
+Ques 4: We are running below query:
+        spark.sql('select * from table where age=25')
+        Will spark bring entire hive table to memory?
+Sol:    Spark will not load entire data to memory while filtering the data. We can check this by physical plan of query.
+        spark.sql('select * from table where age=25').explain(True)
+            == Physical Plan ==
+            *(1) Filter (isnotnull(age#1389L) AND (age#1389L = 25))
+            +- *(1) ColumnarToRow
+            +- FileScan parquet default.table[name#1388,age#1389L,marks#1390L] Batched: true, DataFilters: [isnotnull(age#1389L), (age#1389L = 25)], 
+                Format: Parquet, Location: InMemoryFileIndex[file:/Users/mohan/spark-warehouse/table], 
+                PartitionFilters: [], PushedFilters: [IsNotNull(age), EqualTo(age,25)], ReadSchema: struct<name:string,age:bigint,marks:bigint>
+        As we can see only the required columns will be loaded
+        
+Ques 5: Suppose we have a dataset of 12GB and 6 partitions. What would be the specific memory print in spark context for a. in case of persist b. In case of broadcast?
+Sol:    In case of persist: 12GB
+        In case of broadcast: 12GB (original data) + 12GB*number of executors (Broadcast Data)
+        
+Ques 6: If you have one dataframe df1 and one list which have some qualified cities where you need to run the offers.  but df1 have all the cities where your business is running,How would you get the records only for qualified cities ?
+Sol:	qualified_records= df1.filter($"city".isin(qualified_cities:_ *))
+
+Ques 7: We need to run a scala file in spark shell but we don't want want to create a jar, how can we achieve this?
+Sol:	In spark-shell we need to run : "load myFile.scala". It is useful when we are testing our application code before making a jar.
+
+Ques 8: Let say we are having 2 billions of records in a data lake which is splited into 10,000 partitions. We have taken a sample as:
+val sample_df=df.sample(0.000001), which would have 2000 records. How many partitions will be in sample_df?
+Sol:    No of partitions in sample_df=10,000 same as original df because partition will be inherited. Here we will having 10,000 part-files.
+
+Ques 9: Difference between map & map partitioner?
+Sol:    If there are 2000 row and 20 partitions, then each partition will contain the 2000/20=100 Rows.
+        Now, when we apply map(func) method to rdd, the func() operation will be applied on each and every Row and in this particular case func() operation will be called 2000 times. i.e. time-consuming in some time-critical applications.
+        If we call mapPartition(func) method on rdd, the func() operation will be called on each partition instead of each row. In this particular case, it will be called 20 times(number of the partition). 
+        In this way, you can prevent some processing when it comes to time-consuming application.
+        
+Ques 10: What is On-Heap memory and Off-Heap memory?
+Sol:    Executor acts as a JVM process, and its memory management is based on the JVM. So JVM memory management includes two methods:
+        On-Heap memory management: Objects are allocated on the JVM heap and bound by GC.
+        Off-Heap memory management: Objects are allocated in memory outside the JVM by serialization, managed by the application, and are not bound by GC. 
+        This memory management method can avoid frequent GC, but the disadvantage is that you have to write the logic of memory allocation and memory release.
+        In general, the objects' read and write speed is:
+        on-heap > off-heap > disk
+        
+Ques 11: How will you handle bad data, let in file few of the values having junk (data of different data type) then should we stop the loading or else can we do?
+Sol:	a. To include this data in a separate column: As per the use case, if a user wants us to store a bad record in separate column use option mode as “PERMISSIVE”.
+	Eg: val data = """{"a": 1, "b":2, "c":3}|{"a": 1, "b":2, "c":3}|{"a": 1, "b, "c":10}""".split('|')
+		val corruptDf = spark.read.option("mode", "PERMISSIVE")
+                          .option("columnNameOfCorruptRecord", "_corrupt_record")                          
+                          .json(sc.parallelize(data)
+	b. To ignore all bad records: In this particular use case, if a user doesn’t want to include the bad records at all and wants to store only the correct records use the “DROPMALFORMED” mode.
+		val corruptDf = spark.read.option("mode", "DROPMALFORMED")
+                          .json(sc.parallelize(data)
+	c. Throws an exception when it meets corrupted records: For this use case, if present any bad record will throw an exception. And the mode for this use case will be “FAILFAST”. And it’s a best practice to use this mode in a try-catch block.
+		try {
+  			val corruptDf = spark.read
+  			  .option("mode", "FAILFAST")
+  			  .json(sc.parallelize(data))
+			} catch {
+  			case e:Exception => print(e)
+		}
+     
+Ques 12: Accumulator is accessible from worker node or not?
+Sol:    Tasks on worker nodes cannot access the accumulator’s value.Accumulators are write-only variable for worker nodes.
+
+Ques 13: How to check some partitioned are skewed in spark?
+Sol:    Every SparkContext launches a web UI, by default on port 4040, that displays useful information about the application. This includes:
+        A list of scheduler stages and tasks A summary of RDD sizes and memory usage Environmental information.
+        
+Ques 14: What is partitioner in spark?
+Sol:    Partitioner is an object that defines how the elements in a key-value pair RDD are partitioned by key. It maps each key to a partition ID, from 0 to (number of partitions – 1).
+        There are 3 types of partitioners in spark: (1) Hash-Partitioner (2) Range-Partitioner (3) One can make its Custom Partitioner
+        
+Ques 15: How to assign flag D for duplicates and v for unique based on name field in dataframe?
+Sol:	val df_count=df.select(*).groupBy("col1").count()
+        val df_flag= df_count.withColumn("Flag",when ("count>1","D").otherwise("v"))
+        
+Ques 16: How to achieve incremental insert and upload in Spark?
+Sol:	Approach 1: Union both the dataframes (old and new) then remove duplicates.
+		list1 = [(1, 'abc'),(2,'def')]
+ 		olddf = spark.createDataFrame(list1, ['id', 'value'])
+		list2 = [(2, 'cde'),(3,'xyz')]
+		newdf = spark.createDataFrame(list2, ['id', 'value'])
+		olddf.union(newdf).dropDuplicates(["id"]).show()
+	Approach 2: df = olddf.join(newdf, olddf.id == newdf.id,'full_outer').select(coalesce(olddf.id,newdf.id).alias("id"),coalesce(newdf.value,olddf.value).alias("value"))
+
+Ques 17: Create dataframe with JSON file and display some selected fields.
+Sol:	val df = spark.read.json("src/main/resources/zipcodes.json")
+	Assign schema to this:
+	val df_with_schema = spark.read.schema(schema).json("src/main/resources/zipcodes.json")
+	Now through spark sql we can fetch selected fields.
+    
+Ques 18: What is Speculative execution?
+Sol:	Out of multiple task if few tasks take more time to complete then spark engine kill the task on that executor and restart it on another one. This is called speculative execution.
+	Spark.speculation default value is false If you set to "true", performs speculative execution of tasks.
+	If Spark Streaming writes to Kafka slowly, if speculative execution is enabled, data duplication may result.
+    
+Ques 19: what is explod function in spark?
+Sol:    Explode can be used to convert one row into multiple rows in Spark. Whenever we are having array or list and we want to extract each element of array then we can use explode function.
+	
+Ques 20: Draw Spark architecture.
+Sol:	There are maily 3 component of spark architecture viz driver, worker and cluster manager.
+	Driver: The driver program runs the main () function of the application and is the place where he Spark Context and RDDs are created, and also where transformations and actions are performed.
+		Spark Driver performs two main tasks: Converting user programs into tasks and planning the execution of tasks by executors.
+	Executor: An executor is a distributed agent responsible for the execution of tasks. Every spark application has its own executor process. Executors usually run for the entire lifetime of a Spark application.
+		Executor performs all the data processing and returns the results to the Driver.Reads from and writes data to external sources.Executor stores the computation results in data in-memory, cache or on hard disk drives.
+	Cluster Manager: An external service is responsible for acquiring resources on the Spark cluster and allocating them to a spark job.
+    
+Ques 21: How to create replication in spark?
+Sol:	By Default replication factor is 3 but we can change it by:
+	--spark.yarn.submit.file.replication=5
+    
+Ques 22: Difference between Aggregatebykey & combinebykey?
+Sol:    GroupByKey is very costly operation because of shuffling k-v pair. GroupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers.There are alternatives for this viz AggregateByKey, CombineByKey and reduceByKey.
+	CombineByKey takes 3 parameter viz create combiner, Combiner function and merger function.
+		For combiner, there is lambda function which convert it into kv-pair.
+		Combiner function, combines the values within partition.
+		Merger function, combines the values across the partiton.
+	AggregateByKey takes 3 parameter viz initial value, Combiner function and merger function.
+		Initial value which is also known as an accumulator.
+		Combiner function, combines the values within partition.
+		Merger function, combines the values across the partiton.
+	AggregateByKey return result in different type.
+    
+Ques 23: While processing CSV file resultant output is multiple file, wanted single file?
+Sol:	We can use coalesce or repartition.
+	df.repartition(1).write.mode ("overwrite").format("csv").option("header", "true") .save("filename.csv")
+    
+Ques 24: How to add a constant column in a Spark DataFrame?
+Sol:	val newdf = df.withColumn("newcol",lit("myval"))
+
+Ques 25: I've got big RDD(1gb) in yarn cluster. I can't use collect() How to handle this?
+Sol: RDD.toLocalIterator method an efficient way to do the job. It uses runJob to evaluate only a single partition on each step.
+	As for the toLocalIterator, it is used to collect the data from the RDD scattered around your cluster into one only node, the one from which the program is running, and do something with all the data in the same node. It is similar to the collect method, but instead of returning a List it will return an Iterator.
+	rdd.toLocalIterator()
+    
+Ques 27: How to change column types in Spark SQL DataFrame?
+Sol:    val df2 = df.withColumn("yearTmp", df.year.cast(IntegerType))
+			.drop("year")
+			.withColumnRenamed("yearTmp", "year")
+            
+Ques 28: How to limit the number of retries on Spark job failure in YARN?
+Sol:    spark-submit --conf spark.yarn.maxAppAttempts=1 <application_name>
+
+Ques 29: Spark yarn cluster vs client?
+Sol:    In cluster mode, the driver runs in the Application Master, which means that same process is responsible for both driving the application and requesting resources from YARN. In client mode, the driver runs in the client machine.
+	In cluster mode, Spark does not support spark-shell. But client mode supports spark-shell.
+    
+Ques 30: What is out of memory issue in spark?
+Sol:    Spark can be go out of memory due to of two reasons: Driver out of memory and Executor out of memory.
+		a. Driver out of memory: 
+			i. collect operation: The most common reason of driver to go out of memory is collect operation. When collect operation is being performed then 	files from all the executors comes to the driver which breach the memory capacity of driver.
+			ii. Broadcast join: Suppose we are having few big files and few small files in executors. When we performs bradcast join these small files is being collected at driver and breach it memory capacity. To avoid this we can increase the driver memory or we can set threshold limit for broadcast table.
+		b. Executor out of memory:
+			i. YARN memory overhead: YARN memory is off heap memory part of executors. Whatever the strings we create as part of our program spark creates hash table of that which is called intern strings. These intern string are stored here. Spark internal objects are stored here. Apart from this, if we code in any other languages apart from Scala wheather it is python or R then their objects are also get stored in YARN memory. YARN memory is 10% of executor memory. To avoid the YARN memory overhead we have to increase the capacity of YARN memory overhead part.
+			ii. High Concurrency: Let say we have multiple executors in a machine and we have assigned cores to executor without thinking of the capacity of our machine. Let say we have assigned 10 cores to each executors then it will pick up 10 partitions and process them. Each partition will have their own metadata and overhead memory requirement. Total available executor-memory will be divided to these 10 cores.So each executors have to store huge metadata. Best practice is to assign 4-5 cores to each executors.
+			iii. Big Partitions:
+            
+Ques 31: What is Executor memory and Storage memory?
+Sol:	Executors divides it memory in to executor memory and storage memory.
+	Executor memory is used for computation in shuffles, joins, sorts and aggregations.
+	Storage memory is used for caching and dealing internal data across the cluster.
+	When no execution memory is used, storage can acquire all the available memory and vice versa.
+    
+Ques 32: User schema in spark:
+Sol:	val simpleSchema = StructType(Array(
+		StructField("firstname",StringType,true),
+		StructField("middlename",StringType,true),
+		StructField("lastname",StringType,true),
+		StructField("id", StringType, true),
+		StructField("gender", StringType, true),
+		StructField("salary", IntegerType, true)
+	))		
+	
+	val df = spark.createDataFrame(rdd,simpleSchema)
+	df.printSchema()
+    
+Ques 33: Solution for data skewness in spark: 
+Sol:	i. Repartition in to bigger partition
+		ii. Salting Technique (Adding salt ie random number to partition key)
+		iii. Isolating Salting
+		iv. Isolating Map join
+		v. Iterative broadcast join 
+        
+Ques 34: spark-submit \
+  --master <master-url> \
+  --deploy-mode <deploy-mode> \
+  --conf <key<=<value> \
+  --driver-memory <value>g \
+  --executor-memory <value>g \
+  --executor-cores <number of cores>  \
+  --jars  <comma separated dependencies>
+  --class <main-class> \
+  <application-jar> \

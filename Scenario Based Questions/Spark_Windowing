@@ -1,0 +1,81 @@
+Ques: Data is in below format:
+        +---------+----+
+        |     Date| Amt|
+        +---------+----+
+        |01-Jan-20|  10|
+        |28-Feb-20|  20|
+        |31-Mar-20|null|
+        |30-Apr-20|  30|
+        |31-May-20|null|
+        |30-Jun-20|null|
+        |31-Jul-20|  40|
+        +---------+----+
+    Need to find cummulative sum as below:
+        +---------+----+--------+
+        |     Date| Amt| cum_sum|
+        +---------+----+--------+
+        |01-Jan-20|  10|      10|
+        |28-Feb-20|  20|      30|
+        |31-Mar-20|null|      30|
+        |30-Apr-20|  30|      60|
+        |31-May-20|null|      60|
+        |30-Jun-20|null|      60|
+        |31-Jul-20|  40|     100|
+        +---------+----+--------+
+Sol:    win_spec=Window.orderBy("Date")
+        df=df.withColumn("cum_sum",df["amt"]+coalesce(func.lead(df["amt"],1).over(win_spec),0))
+        
+Ques:   Data is in below format:
+        +---------+----+
+        |     Date| Amt|
+        +---------+----+
+        |01-Jan-20|  10|
+        |28-Feb-20|  20|
+        |31-Mar-20|null|
+        |30-Apr-20|  30|
+        |31-May-20|null|
+        |30-Jun-20|null|
+        |31-Jul-20|  40|
+        +---------+----+
+    Need to replace null as below:
+        +---------+----+--------+
+        |     Date| Amt| cum_sum|
+        +---------+----+--------+
+        |01-Jan-20|  10|      10|
+        |28-Feb-20|  20|      20|
+        |31-Mar-20|null|      20|
+        |30-Apr-20|  30|      30|
+        |31-May-20|null|      30|
+        |30-Jun-20|null|      30|
+        |31-Jul-20|  40|      40|
+        +---------+----+--------+
+Sol:    win_spec=Window.orderBy("Date")
+        df=df.withColumn("amt",coalesce(df["amt"],func.lag(df["amt"],1).over(win_spec)))
+        
+Ques:   Data is in below format:
+        +---------+----+
+        |     Date| Amt|
+        +---------+----+
+        |01-Jan-20|  10|
+        |28-Feb-20|  20|
+        |31-Mar-20|null|
+        |30-Apr-20|  30|
+        |31-May-20|null|
+        |30-Jun-20|null|
+        |31-Jul-20|  40|
+        +---------+----+
+        Need output as:
+        +---------+---+---------------+-------+
+        |     Date|amt|Cummulative_Sum|    AFY|
+        +---------+---+---------------+-------+
+        |01-Jan-20| 10|             10|2019-20|
+        |28-Feb-20| 20|             30|2019-20|
+        |31-Mar-20| 20|             30|2019-20|
+        |30-Apr-20| 30|             60|2020-21|
+        |31-May-20| 30|             60|2020-21|
+        |30-Jun-20| 30|             60|2020-21|
+        |31-Jul-20| 40|            100|2020-21|
+        +---------+---+---------------+-------+
+Sol:    win_spec=Window.orderBy("Date")
+        df=df.withColumn("cum_sum",df["amt"]+coalesce(func.lead(df["amt"],1).over(win_spec),0))
+        df=df.withColumn("AFY",when(month(df["Date"])>3,concat(year(df["Date"]),substring(year(df["Date"])+1,3,3))).otherwise(concat(year(df["Date"])-1,substring(year(df["Date"]),3,3))))

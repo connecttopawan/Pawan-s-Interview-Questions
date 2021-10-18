@@ -1,0 +1,18 @@
+Ques:   csv file is having data as:
+	+----------+----------+
+	|emp_length|      term|
+	+----------+----------+
+	| 10+ years| 36 months|
+	|  < 1 year| 60 months|
+	| 10+ years| 36 months|
+	| 10+ years| 36 months|
+	|    1 year| 60 months|
+	|   3 years| 36 months|
+	|   8 years| 60 months|
+	How will you keep only numerical part.
+Sol: Two approches are there through regular expression viz regexp_extract and regexp_replace
+	Through regexp_extract:
+	df.withColumn("emp_length_num", regexp_extract(col("emp_length"),"\\d+",0)).withColumn("term_num",regexp_extract(col("term"),"\\d+",0)
+    
+	Through regexp_replace:
+	df.withColumn("emp_length_num",regexp_replace(col("emp_length"),"years|year|\\+|\\<","")).withColumn("term_num",regexp_replace(col("term"),"months|month|\\+|\\<",""))
