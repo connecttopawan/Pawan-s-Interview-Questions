@@ -1,0 +1,16 @@
+Redshift
+###################
+It is columnar datawarehouse used for OLAP systems.
+
+--> Architecture
+	1 leader node, multiple compute nodes
+	Leader node
+		has the SQL endpoint
+		coordinates parallel query execution
+	Compute node
+		queries are executed in parallel in multiple nodes
+		scale out / up/ down
+		10 GBs network
+	Runs in a single AZ (high-speed network communication)
+	Instance types: dc2 (dense compute), and dense storage (ds2)
+	Data stored on multiple nodes, dedicated CPU, memory and local storage
