@@ -51,3 +51,28 @@ It is columnar datawarehouse used for OLAP systems.
 			UNIQUE (it's not enforceable by redshift)
 			NOT NULL / NULL (the only that is enforced)
 			REFERENCES (same as FK), not enforceable by redshift
+
+--> Loading data to redshift:
+	Don't use single inserts, use COPY command:
+		from S3, dynamoDB, EMR, EC2
+		split files (use same prefix), and copy will load in parallel, faster.
+		
+	Services that need to go through S3:
+		Kinesis firehose
+		kinesis app
+		AWS DB Migration Service
+		
+	Can use lambda to run the copy command triggered on S3.
+	Splitting files
+		Use number of files = number of slices or a multiple e.g. 4 slices -> 4, 8, 12, .. files
+		Keep file sizes even.
+		
+	Support file format:
+		CSV, delimited, JSON, fixed width, Avro, ORC, Parquet, Text
+		
+	When copy command fails, check tables STL_LOAD_ERRORS, STL_LOADERROR_DETAIL
+	
+	Redshift does not support UPSERT.
+	
+--> Unloading data (LOAD command)
+		To write selected data to file from table.
