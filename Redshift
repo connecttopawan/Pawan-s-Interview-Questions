@@ -76,3 +76,48 @@ It is columnar datawarehouse used for OLAP systems.
 	
 --> Unloading data (LOAD command)
 		To write selected data to file from table.
+
+Hands-on
+##############################
+--> Sort: Can be applied on one or multiple columns.
+		CREATE TABLE deep_dive (
+		aid INT
+		,loc CHAR(3)
+		,dt DATE
+		) SORTKEY (dt, loc);
+
+--> Distribution:
+		CREATE TABLE deep_dive (
+		aid INT --audience_id
+		,loc CHAR(3) --location
+		,dt DATE --date
+		) (EVEN|KEY|ALL|AUTO);
+		
+		
+		CREATE TABLE deep_dive (
+		aid INT --audience_id
+		,loc CHAR(3) --location
+		,dt DATE
+		) DISTSTYLE EVEN;
+		
+		
+		CREATE TABLE deep_dive (
+		aid INT --audience_id
+		,loc CHAR(3) --locatio
+		,dt DATE --date
+		) DISTSTYLE KEY DISTKEY (loc);
+		
+		
+		CREATE TABLE deep_dive (
+		aid INT --audience_id
+		,loc CHAR(3) --location
+		,dt DATE
+		) DISTSTYLE ALL;
+		
+--> Unload:
+			UNLOAD ('Select * from deep_dive')
+			TO 's3://bucket/dd.csv'
+			CREDENTIALS ' ARN '
+			DELIMITER ','
+			PARALLEL OFF
+			
