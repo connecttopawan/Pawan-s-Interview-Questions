@@ -14,3 +14,15 @@ It is columnar datawarehouse used for OLAP systems.
 	Runs in a single AZ (high-speed network communication)
 	Instance types: dc2 (dense compute), and dense storage (ds2)
 	Data stored on multiple nodes, dedicated CPU, memory and local storage
+--> Redshift integrations in AWS:
+	COPY command
+		to load data from:S3,DynamoDB.
+		includes reference to IAM role.
+		
+--> Table Design
+	Distribution styles
+		Even (default): rows distributed accross slices regardless of values in a particular column. 
+		Key: Used to optimize JOINs. same key should be in the same slice to be faster. Values are hashed, same value goes to same location.
+		All: Full table data goes to the first slice of every node
+		Auto: Combines EVEN and ALL.
+		
