@@ -26,3 +26,28 @@ It is columnar datawarehouse used for OLAP systems.
 		All: Full table data goes to the first slice of every node
 		Auto: Combines EVEN and ALL.
 		
+	Sort Keys
+		Similar to indexes. They are not indexes.
+		Redshift uses block size of 1MB. Less IO seeks
+		Sort order allows quicker reading.
+		compound (default): 
+			Includes all columns stated. Order matters (sames as mysql indexes). 
+			Must include prefix of columns (same order).
+			vacuum and analyze operations used for improving performance.
+		interleaved: 
+			all columns are equally important.
+			Data load and vacuum is slower
+			Use on very large tables
+			Not good for loading data in sort order
+			
+	Compression:
+		ENCODE lzo, mostly32, etc. reduce size
+		Redshift support automatic compression. Redshift automatically figures out a good encoding by running ANALYZE command behind the scenes on table creation (only first time).
+		To compress mannually we need run ANALIZE compression table_name, which suggests compression.
+		
+	Constraint
+		column-level:
+			PRIMARY KEY
+			UNIQUE (it's not enforceable by redshift)
+			NOT NULL / NULL (the only that is enforced)
+			REFERENCES (same as FK), not enforceable by redshift
