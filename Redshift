@@ -121,3 +121,11 @@ Hands-on
 			DELIMITER ','
 			PARALLEL OFF
 			
+########################################
+Data ingestion: Deduplication/UPSERT
+########################################
+
+Steps:	1. Load CSV data into a staging table.
+		2. Delete duplicate data from the production table.
+		3. Insert (or append) data from the staging into the production table.
+		
