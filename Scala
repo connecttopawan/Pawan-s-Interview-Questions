@@ -76,3 +76,5 @@
 	sumX3(3,5, (x,y)=>x*x*x+y*y*y)
 
 11. Option in Scala is used to Wrap the Missing value.It holds zero or one element of a type. This means that it is either a Some[T] or a none object. Lets take an example, we are using get() for a map, if value will be there then output some[T] else None.
+
+12. Yeild keyword will returns a result after completing of loop iterations. The for loop used buffer internally to store iterated result and when finishing all iterations it yields the ultimate result from that buffer.
