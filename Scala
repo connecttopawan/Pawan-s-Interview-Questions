@@ -74,3 +74,5 @@
 10.Higher order function: Higher-order functions are defined as a function that does one or more of the functions as arguments, returns a function as its result.
 	Eg:- sumX(3,5, (x,y)=>x+y)
 	sumX3(3,5, (x,y)=>x*x*x+y*y*y)
+
+11. Option in Scala is used to Wrap the Missing value.It holds zero or one element of a type. This means that it is either a Some[T] or a none object. Lets take an example, we are using get() for a map, if value will be there then output some[T] else None.
