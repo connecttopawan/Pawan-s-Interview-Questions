@@ -1,0 +1,40 @@
+#Knapsack Algorithm
+#Recursive (Time complexity O(2^n))
+def knapsack(wt,val,w,n):
+#wt and val are two given array.
+#w is given maximum wt.
+# length of array
+    #Base Condition ---
+    if w==0 or n==0:
+        return 0
+    # When last element of array is greater than maximum wt then will omit the last element.
+    if wt[n-1]>w:
+        return knapsack(wt,val,w,n-1)
+    else:
+         # return the max of case of nth item included or case of nth item not incuded.
+        return max(val[n-1]+ knapsack(wt, val, w-wt[n-1], n-1), knapsack(wt, val,w,n-1))
+
+        
+#Memoization (Recursive+Table)  ** Preferred (Time complexity O(n*w))
+def knapsack(wt,val,n,w,T):
+#wt and val are two given array.
+#w is given maximum wt.
+# length of array
+# T is the table created for storage.
+#Base Condition ---
+    if w==0 or n==0:
+        return 0
+    if T[n][w]!=-1:
+        return T[n][w]
+    # When last element of array is greater than maximum wt then will omit the last element & store it to table.
+    if wt[n-1]>w:
+        T[n][w]=knapsack(wt,val,w,n-1,T)
+        return T[n][w]
+    else:
+        T[n][w]=max(val[n-1]+ knapsack(wt, val, w-wt[n-1], n-1,T), knapsack(wt, val,w,n-1,T))
+        return T[n][w]
+if __name__=='__main__':
+#initialize the matrix with -1 at first
+    T = [[-1 for i in range(n+1)]
+          for i in range(w+1)]
+    

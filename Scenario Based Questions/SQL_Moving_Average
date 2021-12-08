@@ -1,0 +1,35 @@
+There is a database that contains a website traffic over a period of 30 days. The first table contains users information including the users type (user,crawler,admin). Second table consists of the time of each visit to the website, the ID of the visitor, time spent on the website in seconds.
+
+I need a Oracle SQL query to show the 3 day moving average of time spent on the website for users.user_type = 'user'.
+
+Tables :-
+
+Users:-
+
+Id	Name	User_type
+1	Matt	user
+2	John	user
+3	Louie	Admin
+Traffic:-
+
+user_id	visited_on	time_spent
+1	2019-05-01	15
+2	2019-05-02	20
+2	2019-05-03	10
+Expected output:
+
+visited_on	Average_time_spent
+2019-05-01	15.0000
+2019-05-02	17.5000
+2019-05-03	15.0000
+
+Sol: 
+select t.VISITED_ON
+, avg(t.TIME_SPENT)over(
+    order by t.VISITED_ON
+       range between interval '2' day preceding and interval '0' day following
+) Average_time_spent
+from Users u
+join Traffic t on u.Id = t.user_id
+where u.User_type = 'user'
+;

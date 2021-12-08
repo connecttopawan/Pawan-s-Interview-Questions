@@ -1,0 +1,30 @@
+#Longest common subsequence
+#Recursive (Only Recursive)
+def lcs(S1,S2,l1,l2):
+# S1 and S2 are given string & l1 and l2 are their corressponding length
+    if l1==0 or l2==0:
+        return 0
+    elif S1[l1-1]==S2[l2-1]:
+        return 1+lcs(S1,S2,l1-1,l2-1)
+    else
+        return max(lcs(S1,S2,l1-1,l2),lcs(S1,S2,l1,l2-1))
+
+#Memoization (Recursive+Table)  ** Preferred
+def lcs(S1,S2,l1,l2,T):
+# S1 and S2 are given string & l1 and l2 are their corressponding length.
+# T is the table created for storage.
+    if l1==0 or l2==0:
+        return 0
+    if T[l1-1][l2-1]!=-1:
+        return T[l1-1][l2-1]
+    if S1[l1-1]==S2[l2-1]:
+        T[l1-1][l2-1]=1+lcs(S1,S2,l1-1,l2-1,T)
+        return T[l1-1][l2-1]
+    else
+        T[l1-1][l2-1]= max(lcs(S1,S2,l1-1,l2,T),lcs(S1,S2,l1,l2-1,T))
+        return T[l1-1][l2-1]
+if __name__=='__main__':
+    T = [[-1 for i in range(l1)]
+          for i in range(l2)]
+          
+# Top down (Only Table)
