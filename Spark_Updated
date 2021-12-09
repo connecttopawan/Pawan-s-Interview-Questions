@@ -219,3 +219,6 @@ Ques 34: spark-submit \
   --jars  <comma separated dependencies>
   --class <main-class> \
   <application-jar> \
+  
+Ques 35: Partitining pruning:
+Sol: Similar to providing where clause in SQL. Partition pruning in Spark is a performance optimization that limits the number of files and partitions that Spark reads when querying. We provide the filter condition then catalyst optimizer push down the partition filters. The scan reads only the directories that match the partition filters, thus reducing disk I/O.
